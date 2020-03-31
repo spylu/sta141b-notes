@@ -75,7 +75,7 @@
     classroom.
   - Assignments must be turned in by the due date. No late assignments
     are accepted.
-  - Participation will be based on your reputation point in Campuswire.
+  - Participation will be based on your reputation points in Campuswire.
 
 ## Resources
 

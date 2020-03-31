@@ -37,7 +37,6 @@ So what is tidyverse?
 
 ## Pipe operator
 
-In fact, this pipe operator is exported from the package `magrittr` and could be used solely
 ```{r}
 x1 <- 1:5
 x2 <- 2:6

@@ -82,9 +82,9 @@ Learn how to ask a question. Asking a question is an art, [stackoverflow.com](ht
 
 ## How to "clone" the notes repo
 
-Assumming that you have `git` installed,
+Assuming that you have `git` installed,
 
-- Open RStudio -> New Project -> Version Control -> Git -> paste the URL: https://github.com/ucdavis-sta141b-sq-2020/sta141b-notes.git
+- Open RStudio -> New Project -> Version Control -> Git -> paste the URL: https://github.com/ucdavis-sta141c-sq-2020/sta141c-notes.git
 - Choose a directory to create the project
 - You could make any changes to the repo as you wish.
 - To fetch updates
@@ -92,11 +92,11 @@ Assumming that you have `git` installed,
     - click the "Commit" button and 
     - check the files changed by you
     - type a short message about the changes and hit "Commit"
-    - After commiting the message, hit the "Pull" button (PS: there is a sub button "Pull with rebase", only use it if you truely understand what it is)
+    - After committing the message, hit the "Pull" button (PS: there is a sub button "Pull with rebase", only use it if you truly understand what it is)
     - Done if you see no errors
     - If there were lines which are updated by both me and you, you would see a merge conflict.
     - To resolve the conflict, locate the files with conflicts (U flag in the git pane).
-    - Open the files and edit the conflicts, usally a conflict looks like
+    - Open the files and edit the conflicts, usually a conflict looks like
     ```
     <<<<<<< HEAD
     - RStudio 1.2.5011 (check your RStudio Version)
@@ -105,6 +105,7 @@ Assumming that you have `git` installed,
     >>>>>>> 85858c9a6ebba9057ca8db7c269bd0a2f7a3910a
     ```
     - check all the files with conflicts and commit them again with a new message.
+
 
 
 ## Assignments
@@ -138,10 +139,11 @@ The grading criteria are correctness, code quality, and communication. The follo
 
 The report does the following:
 
-solves all the questions contained in the prompt
-makes conclusions that are supported by evidence in the data
-discusses efficiency and limitations of the computation
-cites any sources used
+- solves all the questions contained in the prompt
+- makes conclusions that are supported by evidence in the data
+- discusses efficiency and limitations of the computation
+- cites any sources used
+
 The attached code runs without modification.
 
 #### Code Quality
