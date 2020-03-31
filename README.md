@@ -10,11 +10,9 @@
       - [Prerequisites](#prerequisites)
       - [How to “clone” the notes repo](#how-to-clone-the-notes-repo)
       - [Assignments](#assignments)
-      - [Assignment Rubric](#assignment-rubric)
-          - [Correctness](#correctness)
-          - [Code Quality](#code-quality)
-          - [Communication](#communication)
-          - [Inquisitiveness](#inquisitiveness)
+          - [Feedback](#feedback)
+          - [Regrade Requests](#regrade-requests)
+          - [Assignment Rubric](#assignment-rubric)
 
 # STA 141B Data & Web Technologies for Data Analysis
 
@@ -142,7 +140,23 @@ Check regularly the course github organization
 <https://github.com/ucdavis-sta141b-sq-2020> for any newly posted
 assignments.
 
-## Assignment Rubric
+### Feedback
+
+Feedback will be given in forms of GitHub issues or pull requests.
+
+### Regrade Requests
+
+Regrade requests must be made within one week of the return of the
+assignment. One of the most common reasons is not having the knitted
+html files uploaded, 30% of the grade of that assignment will be
+deducted if it happens. To make a request, send me a Canvas message with
+the following information:
+
+  - Which assignment
+  - URL to the repo of your assignment
+  - The reason of the request
+
+### Assignment Rubric
 
 (Adapted from Nick Ulle and Clark Fitzgerald )
 
@@ -155,7 +169,7 @@ The grading criteria are correctness, code quality, and communication.
 The following describes what an excellent homework solution should look
 like:
 
-### Correctness
+#### Correctness
 
 The report does the following:
 
@@ -164,14 +178,14 @@ are supported by evidence in the data discusses efficiency and
 limitations of the computation cites any sources used The attached code
 runs without modification.
 
-### Code Quality
+#### Code Quality
 
 The code is idiomatic and efficient. Different steps of the data
 processing are logically organized into scripts and small, reusable
 functions. Variable names are descriptive. The style is consistent and
 easy to read.
 
-### Communication
+#### Communication
 
 Plots include titles, axis labels, and legends or special annotations
 where appropriate. Tables include only columns of interest, are clearly
@@ -179,7 +193,7 @@ explained in the body of the report, and not too large. Numbers are
 reported in human readable terms, i.e. 31 billion rather than
 31415926535. Writing is clear, correct English.
 
-### Inquisitiveness
+#### Inquisitiveness
 
 The report points out anomalies or notable aspects of the data
 discovered over the course of the analysis. It discusses assumptions in
