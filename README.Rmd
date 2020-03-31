@@ -112,9 +112,18 @@ Register your github account at https://randyimac.duckdns.org/sta141b-signin/
 
 Check regularly the course github organization https://github.com/ucdavis-sta141b-sq-2020 for any newly posted assignments.
 
+### Feedback
+
+Feedback will be given in forms of GitHub issues or pull requests.
+
 ### Regrade Requests
 
-Regrade requests must be made within one week of the return of the assignment or test. Instructions for requests will be given at the time of the return.
+Regrade requests must be made within one week of the return of the assignment. 
+One of the most common reasons is not having the knitted html files uploaded, 30% of the grade of that assignment will be deducted if it happens. To make a request, send me a Canvas message with the following information:
+
+- Which assignment
+- URL to the repo of your assignment
+- The reason of the request
 
 ### Assignment Rubric
 
