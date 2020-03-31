@@ -6,7 +6,6 @@
       - [Links](#links)
       - [Tentative Schedule](#tentative-schedule)
       - [Grading](#grading)
-      - [Want to ask questions?](#want-to-ask-questions)
       - [Resources](#resources)
       - [Prerequisites](#prerequisites)
       - [How to “clone” the notes repo](#how-to-clone-the-notes-repo)
@@ -21,10 +20,12 @@
 
 ## People
 
-  - Instructor: Randy Lai <rcslai@ucdavis.edu>
+  - Instructor: Randy Lai<br> You should use Canvas message to contact
+    me. DO NOT send email to me as I tend to ignore emails (too much
+    spams).
   - Meeting time: 9:00 - 10:20 AM, TR
   - Office hour: Monday and Thursday 2:00 - 3:00pm (or by appointment)
-  - TA: Yuxuan Zhang <yuxzh@ucdavis.edu>
+  - TA: Yuxuan Zhang
 
 ## Material
 
@@ -37,9 +38,19 @@
 
   - [Canvas](http://canvas.ucdavis.edu/) for grades
   - [GitHub](https://github.com/ucdavis-sta141b-sq-2020) for lecture
-    notes and assignments
+    notes and assignments. Please always refer to the documents found on
+    GitHub.
   - [Campuswire](https://campuswire.com/p/GB75A79C1) for discussions.
-    (Please use your ucd email to register\!)
+    Please use your ucd email to register\! If you have used piazza
+    before, it is similar but has a better interface. Please use
+    Campuswire to ask any questions related to assignments and course
+    materials. I and the TA will not answer any emails related to the
+    course materials.<br> Learn how to ask a question. Asking a question
+    is an art,
+    [stackoverflow.com](https://stackoverflow.com/help/how-to-ask) has
+    some good tips. You could also use the
+    [reprex](https://reprex.tidyverse.org/) package to make reproducible
+    examples.
 
 ## Tentative Schedule
 
@@ -68,26 +79,12 @@
     are accepted.
   - Participation will be based on your reputation point in Campuswire.
 
-## Want to ask questions?
-
-Please use Campuswire to ask any questions related to assignments and
-course materials. I and the TA will not answer any emails related to the
-course materials. For private or sensitive questions you should use
-canvas message to contact me. DO NOT send email to me as I tend to
-ignore emails (too much spams).
-
-Learn how to ask a question. Asking a question is an art,
-[stackoverflow.com](https://stackoverflow.com/help/how-to-ask) has some
-good tips. You could also use the
-[reprex](https://reprex.tidyverse.org/) package to make reproducible
-examples.
-
 ## Resources
 
-  - J. Bryan, Data wrangling, exploration, and analysis with R
-    (<https://stat545.com/>)
   - J. Bryan, the STAT 545 TAs, J. Hester, Happy Git and GitHub for the
     useR (<https://happygitwithr.com/>)
+  - J. Bryan, Data wrangling, exploration, and analysis with R
+    (<https://stat545.com/>)
   - G. Grolemund and H. Wickham, R for Data Science
     (<https://r4ds.had.co.nz/>)
   - H. Wickham, Advanced R (<https://adv-r.hadley.nz/>)
