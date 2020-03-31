@@ -18,9 +18,9 @@
 [introduction]: README.md
 [dplyr]: https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/04-02-dplyr/dplyr.html
 
-## Site
+## Links
 
-- Canvas for grades
+- [Canvas](http://canvas.ucdavis.edu/) for grades
 - [GitHub](https://github.com/ucdavis-sta141b-sq-2020) for lecture notes and assignments
 - [Campuswire](https://campuswire.com/p/GB75A79C1) for discussions. (Please use your ucd email to register!)
 
@@ -76,6 +76,33 @@ Learn how to ask a question. Asking a question is an art, [stackoverflow.com](ht
 - RStudio 1.2.5033 (check your RStudio Version)
 - R Markdown
 - Knowledge about git and GitHub: read 'Happy Git and GitHub for the useR' (It is absoluately important to read the ebook if you have no experiences with git/GitHub)
+
+
+## How to "clone" the notes repo
+
+Assumming that you have `git` installed,
+
+- Open RStudio -> New Project -> Version Control -> Git -> paste the URL: https://github.com/ucdavis-sta141b-sq-2020/sta141b-notes.git
+- Choose a directory to create the project
+- You could make any changes to the repo as you wish.
+- To fetch updates
+    - go to the `git` pane in RStudio
+    - click the "Commit" button and 
+    - check the files changed by you
+    - type a short message about the changes and hit "Commit"
+    - After commiting the message, hit the "Pull" button (PS: there is a sub button "Pull with rebase", only use it if you truely understand what it is)
+    - Done if you see no errors
+    - If there were lines which are updated by both me and you, you would see a merge conflict.
+    - To resolve the conflict, locate the files with conflicts (U flag in the git pane).
+    - Open the files and edit the conflicts, usally a conflict looks like
+    ```
+    <<<<<<< HEAD
+    - RStudio 1.2.5011 (check your RStudio Version)
+    =======
+    - RStudio 1.2.5033 (check your RStudio Version)
+    >>>>>>> 85858c9a6ebba9057ca8db7c269bd0a2f7a3910a
+    ```
+    - check all the files with conflicts and commit them again with a new message.
 
 
 ## Assignments
