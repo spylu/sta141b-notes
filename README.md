@@ -43,8 +43,8 @@
     before, it is similar but has a better interface. Please use
     Campuswire to ask any questions related to assignments and course
     materials. I and the TA will not answer any emails related to the
-    course materials.<br> Learn how to ask a question. Asking a question
-    is an art,
+    course materials.<br> Use Join code: 5799<br> Learn how to ask a
+    question. Asking a question is an art,
     [stackoverflow.com](https://stackoverflow.com/help/how-to-ask) has
     some good tips. You could also use the
     [reprex](https://reprex.tidyverse.org/) package to make reproducible
