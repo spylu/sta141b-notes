@@ -2,7 +2,6 @@
 title: "Tidy Data"
 output: 
   html_document: 
-    df_print: default
     toc: yes
 ---
 
