@@ -75,7 +75,7 @@
     classroom.
   - Assignments must be turned in by the due date. No late assignments
     are accepted.
-  - Participation will be based on your reputation points in Campuswire.
+  - Participation will be based on your reputation point in Campuswire.
 
 ## Resources
 
@@ -100,11 +100,11 @@
 
 ## How to “clone” the notes repo
 
-Assumming that you have `git` installed,
+Assuming that you have `git` installed,
 
   - Open RStudio -\> New Project -\> Version Control -\> Git -\> paste
     the URL:
-    <https://github.com/ucdavis-sta141b-sq-2020/sta141b-notes.git>
+    <https://github.com/ucdavis-sta141c-sq-2020/sta141c-notes.git>
   - Choose a directory to create the project
   - You could make any changes to the repo as you wish.
   - To fetch updates
@@ -112,15 +112,15 @@ Assumming that you have `git` installed,
       - click the “Commit” button and
       - check the files changed by you
       - type a short message about the changes and hit “Commit”
-      - After commiting the message, hit the “Pull” button (PS: there is
-        a sub button “Pull with rebase”, only use it if you truely
+      - After committing the message, hit the “Pull” button (PS: there
+        is a sub button “Pull with rebase”, only use it if you truly
         understand what it is)
       - Done if you see no errors
       - If there were lines which are updated by both me and you, you
         would see a merge conflict.
       - To resolve the conflict, locate the files with conflicts (U flag
         in the git pane).
-      - Open the files and edit the conflicts, usally a conflict looks
+      - Open the files and edit the conflicts, usually a conflict looks
         like
     <!-- end list -->
         <<<<<<< HEAD
@@ -173,10 +173,12 @@ like:
 
 The report does the following:
 
-solves all the questions contained in the prompt makes conclusions that
-are supported by evidence in the data discusses efficiency and
-limitations of the computation cites any sources used The attached code
-runs without modification.
+  - solves all the questions contained in the prompt
+  - makes conclusions that are supported by evidence in the data
+  - discusses efficiency and limitations of the computation
+  - cites any sources used
+
+The attached code runs without modification.
 
 #### Code Quality
 
