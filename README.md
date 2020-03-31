@@ -9,12 +9,14 @@
 
 ## Material
 
-| Date          | Note             | HTML           | PDF |
-| ----          | ----             | ----           | --- |
-| 01-07         | Introduction     | [introduction] |     |
+| Date          | Note             | HTML          
+| ----          | ----             | ----          
+| 03-31         | Introduction     | [introduction]
+| 04-02         | dplyr     | [dplyr] |     
 
 
 [introduction]: README.md
+[dplyr]: https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/04-02-dplyr/dplyr.html
 
 ## Site
 
@@ -71,7 +73,7 @@ Learn how to ask a question. Asking a question is an art, [stackoverflow.com](ht
 
 - Strong in R programming
 - R 3.6.3 (check your R version)
-- RStudio 1.2.50xx (check your RStudio Version)
+- RStudio 1.2.5033 (check your RStudio Version)
 - R Markdown
 - Knowledge about git and GitHub: read 'Happy Git and GitHub for the useR' (It is absoluately important to read the ebook if you have no experiences with git/GitHub)
 
