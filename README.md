@@ -50,12 +50,12 @@
 
 - There will be around 6 assignments and they are assigned via GitHub classroom.
 - Assignments must be turned in by the due date. No late assignments are accepted.
-- Participation will be based on your reputation score in Campuswire.
+- Participation will be based on your reputation point in Campuswire.
 
 
 ## Want to ask questions?
 
-Please use piazza to ask any questions related to assignments and course materials. I and the TA will not answer any emails related to the course materials.
+Please use Campuswire to ask any questions related to assignments and course materials. I and the TA will not answer any emails related to the course materials.
 For private or sensitive questions you should use canvas message to contact me. DO NOT send email to me as I tend to ignore emails (too much spams).
 
 Learn how to ask a question. Asking a question is an art, [stackoverflow.com](https://stackoverflow.com/help/how-to-ask) has some good tips. You could also use the [reprex](https://reprex.tidyverse.org/) package to make reproducible examples.
