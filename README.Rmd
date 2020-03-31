@@ -30,7 +30,8 @@ output:
 - [Canvas](http://canvas.ucdavis.edu/) for grades
 - [GitHub](https://github.com/ucdavis-sta141b-sq-2020) for lecture notes and assignments. Please always refer to the documents found on GitHub.
 - [Campuswire](https://campuswire.com/p/GB75A79C1) for discussions. Please use your ucd email to register! If you have used piazza before, it is similar but has a better interface. Please use Campuswire to ask any questions related to assignments and course materials. I and the TA will not answer any emails related to the course materials.<br>
-Learn how to ask a question. Asking a question is an art, [stackoverflow.com](https://stackoverflow.com/help/how-to-ask) has some good tips. You could also use the [reprex](https://reprex.tidyverse.org/) package to make reproducible examples. Join code: 5799
+Use Join code: 5799<br>
+Learn how to ask a question. Asking a question is an art, [stackoverflow.com](https://stackoverflow.com/help/how-to-ask) has some good tips. You could also use the [reprex](https://reprex.tidyverse.org/) package to make reproducible examples.
 
 
 ## Tentative Schedule
