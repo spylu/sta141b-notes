@@ -74,7 +74,7 @@ Learn how to ask a question. Asking a question is an art, [stackoverflow.com](ht
 - Strong in R programming
 - R 3.6.3 (check your R version)
 - RStudio 1.2.5033 (check your RStudio Version)
-- R Markdown
+- R Markdown (read this https://rmarkdown.rstudio.com/lesson-1.html)
 - Knowledge about git and GitHub: read 'Happy Git and GitHub for the useR' (It is absoluately important to read the ebook if you have no experiences with git/GitHub)
 
 
