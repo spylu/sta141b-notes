@@ -107,6 +107,8 @@ Assumming that you have `git` installed,
 
 ## Assignments
 
+Register your github account at https://randyimac.duckdns.org/sta141b-signin/
+
 Check regularly the course github organization https://github.com/ucdavis-sta141b-sq-2020 for any newly posted assignments.
 
 
