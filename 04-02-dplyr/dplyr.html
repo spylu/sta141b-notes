@@ -381,9 +381,14 @@ summary {
 <div id="TOC">
 <ul>
 <li><a href="#what-is-tidyverse">What is tidyverse?</a></li>
-<li><a href="#pipe-operator">Pipe operator</a></li>
-<li><a href="#dplyr-basics">dplyr basics</a></li>
-<li><a href="#obtain-some-data">Obtain some Data</a></li>
+<li><a href="#pipe-operator">Pipe operator</a>
+<ul>
+<li><a href="#basic-usage">Basic usage</a></li>
+<li><a href="#the-argument-placeholder">The argument placeholder</a></li>
+<li><a href="#re-using-the-placeholder">Re-using the placeholder</a></li>
+</ul></li>
+<li><a href="#dplyr-basics"><code>dplyr</code> basics</a></li>
+<li><a href="#obtain-some-data">Obtain some data</a></li>
 <li><a href="#select-picks-variables-based-on-their-names."><code>select</code>: picks variables based on their names.</a>
 <ul>
 <li><a href="#i-dont-see-why-its-useful">I don’t see why it’s useful</a></li>
@@ -442,31 +447,69 @@ summary {
 </div>
 <div id="pipe-operator" class="section level2">
 <h2>Pipe operator</h2>
-<p>In fact, this pipe operator is exported from the package <code>magrittr</code> and could be used solely</p>
-<pre class="r"><code>x1 &lt;- 1:5
-x2 &lt;- 2:6
-sqrt(sum((x2 - x1)^2))</code></pre>
-<pre><code>## [1] 2.236068</code></pre>
-<pre class="r"><code>(x2 - x1)^2 %&gt;%
-  sum() %&gt;%
-  sqrt()</code></pre>
-<pre><code>## [1] 2.236068</code></pre>
-<pre class="r"><code># computer the binomial coefficients
-n &lt;- 5
-x &lt;- 0:5
-choose(n, x)</code></pre>
-<pre><code>## [1]  1  5 10 10  5  1</code></pre>
-<pre class="r"><code>n %&gt;% choose(x)</code></pre>
-<pre><code>## [1]  1  5 10 10  5  1</code></pre>
-<pre class="r"><code>x %&gt;% choose(n, .)</code></pre>
-<pre><code>## [1]  1  5 10 10  5  1</code></pre>
-<pre class="r"><code>list(n = 5, x = 0:5) %&gt;% {
-  choose(.$n, .$x)
-}</code></pre>
-<pre><code>## [1]  1  5 10 10  5  1</code></pre>
+<p>We are going to detour a bit to talk about pipe operator. Pipe operator is a powerful way to make your code much cleaner and readible by</p>
+<ul>
+<li>structuring sequences of data operations left-to-right (as opposed to from the inside and out),</li>
+<li>avoiding nested function calls,</li>
+<li>minimizing the need for local variables and function definitions, and</li>
+<li>making it easy to add steps anywhere in the sequence of operations.</li>
+</ul>
+<p>The operators pipe their left-hand side values forward into expressions that appear on the right-hand side, i.e. one can replace <code>f(x)</code> with <code>x %&gt;% f()</code>, where <code>%&gt;%</code> is the (main) pipe-operator. When coupling several function calls with the pipe-operator, the benefit will become more apparent. Consider this pseudo example:</p>
+<pre class="r"><code>raw_data &lt;- read.csv(&quot;/path/to/data/file.csv&quot;)
+sub_data &lt;- subset(raw_data, variable_a &gt; x)
+new_data &lt;- transform(sub_data, variable_c = variable_a / variable_b)
+the_data &lt;- head(new_data, 100)</code></pre>
+<p>However, the local variables are really not necessary, so one liner could be</p>
+<pre class="r"><code>the_data &lt;- head(
+  transform(
+    subset(
+      read.csv(&quot;/path/to/data/file.csv&quot;), 
+    variable_a &gt; x), 
+  variable_c = variable_a / variable_b), 
+100)</code></pre>
+<p>But that is too hard to read and reason. If we use pipe operator,</p>
+<pre class="r"><code>the_data &lt;- read.csv(&quot;/path/to/data/file.csv&quot;) %&gt;%
+  subset(variable_a &gt; x) %&gt;%
+  transform(variable_c = variable_a / variable_b) %&gt;%
+  head(100)</code></pre>
+<p>Hint: In RStudio, you could use <code>Ctrl + Shift + M</code> (or <code>Cmd + Shift + M</code>) to insert the pipe operator.</p>
+<div id="basic-usage" class="section level3">
+<h3>Basic usage</h3>
+<ul>
+<li><code>x %&gt;% f</code> or <code>x %&gt;% f()</code> is equivalent to <code>f(x)</code></li>
+<li><code>x %&gt;% f(y)</code> is equivalent to <code>f(x, y)</code></li>
+<li><code>x %&gt;% f %&gt;% g %&gt;% h</code> is equivalent to <code>h(g(f(x)))</code></li>
+</ul>
+<pre class="r"><code>choose(5, 3)</code></pre>
+<pre><code>## [1] 10</code></pre>
+<pre class="r"><code>5 %&gt;% choose(3)</code></pre>
+<pre><code>## [1] 10</code></pre>
+</div>
+<div id="the-argument-placeholder" class="section level3">
+<h3>The argument placeholder</h3>
+<ul>
+<li><code>x %&gt;% f(y, .)</code> is equivalent to <code>f(y, x)</code></li>
+<li><code>x %&gt;% f(y, z = .)</code> is equivalent to <code>f(y, z = x)</code></li>
+</ul>
+<pre class="r"><code>3 %&gt;% choose(5, .)</code></pre>
+<pre><code>## [1] 10</code></pre>
+<pre class="r"><code>3 %&gt;% choose(5, k = .)</code></pre>
+<pre><code>## [1] 10</code></pre>
+</div>
+<div id="re-using-the-placeholder" class="section level3">
+<h3>Re-using the placeholder</h3>
+<p>It is straightforward to use the placeholder several times in a right-hand side expression. However, when the placeholder only appears in a nested expressions magrittr will still apply the first-argument rule. The reason is that in most cases this results more clean code.</p>
+<p><code>x %&gt;% f(y = nrow(.), z = ncol(.))</code> is equivalent to <code>f(x, y = nrow(x), z = ncol(x))</code></p>
+<pre class="r"><code>5 %&gt;% choose(. - 2)</code></pre>
+<pre><code>## [1] 10</code></pre>
+<p>The behavior can be overruled by enclosing the right-hand side in braces:</p>
+<p><code>x %&gt;% {f(y = nrow(.), z = ncol(.))}</code> is equivalent to <code>f(y = nrow(x), z = ncol(x))</code></p>
+<pre class="r"><code>list(n = 5, k = 3) %&gt;% {choose(.$n, .$k)}</code></pre>
+<pre><code>## [1] 10</code></pre>
+</div>
 </div>
 <div id="dplyr-basics" class="section level2">
-<h2>dplyr basics</h2>
+<h2><code>dplyr</code> basics</h2>
 <ul>
 <li>It offers five basic verbs
 <ul>
@@ -480,10 +523,11 @@ choose(n, x)</code></pre>
 </ul>
 </div>
 <div id="obtain-some-data" class="section level2">
-<h2>Obtain some Data</h2>
+<h2>Obtain some data</h2>
 <p>First of all, we need some data to work with. If the data is stored in a <code>csv</code>,</p>
 <pre class="r"><code>flights &lt;- read_csv(&quot;flights.csv&quot;)</code></pre>
-<p>We are using the <code>tidyverse</code> function <code>read_csv</code> to import the <code>flights.csv</code> instead of the obsolete base function <code>read.csv</code>. - <code>read_csv</code> imports data as <code>tibble</code> which has better output - <code>read_csv</code> is often faster than <code>read.csv</code> - <code>read_csv</code> handles unicode characters better</p>
+<p>We are using the <code>tidyverse</code> function <code>read_csv</code> to import the <code>flights.csv</code> instead of the obsolete base function <code>read.csv</code>. - <code>read_csv</code> imports data as <code>tibble</code> which has better and more consistent handling of variables. - <code>read_csv</code> is often faster than <code>read.csv</code> - <code>read_csv</code> handles unicode characters better</p>
+<p>There are also <code>read_tsv</code> and <code>read_delim</code> for reading tab-seperated or delimited files.</p>
 <p>The datasets are actually obtained from the R package <code>nycflights13</code></p>
 <pre class="r"><code># Airline on-time data for all flights departing NYC in 2013.
 library(nycflights13)
@@ -510,7 +554,7 @@ flights</code></pre>
 <p>To select arrival and departure times,</p>
 <pre class="r"><code># old way to do it
 # flights[, c(&quot;arr_time&quot;, &quot;dep_time&quot;)]
-select(flights, arr_time, dep_time)</code></pre>
+flights %&gt;% select(arr_time, dep_time)</code></pre>
 <pre><code>## # A tibble: 336,776 x 2
 ##    arr_time dep_time
 ##       &lt;int&gt;    &lt;int&gt;
@@ -529,7 +573,7 @@ select(flights, arr_time, dep_time)</code></pre>
 <h3>I don’t see why it’s useful</h3>
 <p><code>dplyr</code> provides a lot of helper functions,</p>
 <pre class="r"><code># colon `:` specifies all the variables between the columns of `dep_time` and `arr_time`
-select(flights, dep_time:arr_time)</code></pre>
+flights %&gt;% select(dep_time:arr_time)</code></pre>
 <pre><code>## # A tibble: 336,776 x 4
 ##    dep_time sched_dep_time dep_delay arr_time
 ##       &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;
@@ -545,7 +589,7 @@ select(flights, dep_time:arr_time)</code></pre>
 ## 10      558            600        -2      753
 ## # … with 336,766 more rows</code></pre>
 <pre class="r"><code># all the columns start with arr_
-select(flights, starts_with(&quot;arr_&quot;))</code></pre>
+flights %&gt;% select(starts_with(&quot;arr_&quot;))</code></pre>
 <pre><code>## # A tibble: 336,776 x 2
 ##    arr_time arr_delay
 ##       &lt;int&gt;     &lt;dbl&gt;
@@ -561,7 +605,7 @@ select(flights, starts_with(&quot;arr_&quot;))</code></pre>
 ## 10      753         8
 ## # … with 336,766 more rows</code></pre>
 <pre class="r"><code># all the columns end with _time
-select(flights, ends_with(&quot;_time&quot;))</code></pre>
+flights %&gt;% select(ends_with(&quot;_time&quot;))</code></pre>
 <pre><code>## # A tibble: 336,776 x 5
 ##    dep_time sched_dep_time arr_time sched_arr_time air_time
 ##       &lt;int&gt;          &lt;int&gt;    &lt;int&gt;          &lt;int&gt;    &lt;dbl&gt;
@@ -577,7 +621,7 @@ select(flights, ends_with(&quot;_time&quot;))</code></pre>
 ## 10      558            600      753            745      138
 ## # … with 336,766 more rows</code></pre>
 <pre class="r"><code># all the columns contain dep
-select(flights, contains(&quot;dep&quot;))</code></pre>
+flights %&gt;% select(contains(&quot;dep&quot;))</code></pre>
 <pre><code>## # A tibble: 336,776 x 3
 ##    dep_time sched_dep_time dep_delay
 ##       &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;
@@ -593,7 +637,7 @@ select(flights, contains(&quot;dep&quot;))</code></pre>
 ## 10      558            600        -2
 ## # … with 336,766 more rows</code></pre>
 <pre class="r"><code># all the columns do not contain dep
-select(flights, -contains(&quot;dep&quot;))</code></pre>
+flights %&gt;% select(-contains(&quot;dep&quot;))</code></pre>
 <pre><code>## # A tibble: 336,776 x 16
 ##     year month   day arr_time sched_arr_time arr_delay carrier flight tailnum
 ##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt; &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;  
@@ -610,7 +654,7 @@ select(flights, -contains(&quot;dep&quot;))</code></pre>
 ## # … with 336,766 more rows, and 7 more variables: origin &lt;chr&gt;, dest &lt;chr&gt;,
 ## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
 <pre class="r"><code># using regular expression (later of the course)
-select(flights, matches(&quot;^(arr|dep)_&quot;))</code></pre>
+flights %&gt;% select(matches(&quot;^(arr|dep)_&quot;))</code></pre>
 <pre><code>## # A tibble: 336,776 x 4
 ##    dep_time dep_delay arr_time arr_delay
 ##       &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;     &lt;dbl&gt;
@@ -625,8 +669,9 @@ select(flights, matches(&quot;^(arr|dep)_&quot;))</code></pre>
 ##  9      557        -3      838        -8
 ## 10      558        -2      753         8
 ## # … with 336,766 more rows</code></pre>
+<p>Related verbs: - if you just need a single variable, you could use <code>pull</code>. - you could use <code>rename</code> to rename columns</p>
 <pre class="r"><code># of course, we could select everything
-select(flights, everything())</code></pre>
+flights %&gt;% select(everything())</code></pre>
 <pre><code>## # A tibble: 336,776 x 19
 ##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
 ##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
@@ -644,7 +689,7 @@ select(flights, everything())</code></pre>
 ## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
 ## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
 <pre class="r"><code># move air_time to the front
-select(flights, air_time, everything())</code></pre>
+flights %&gt;% select(air_time, everything())</code></pre>
 <pre><code>## # A tibble: 336,776 x 19
 ##    air_time  year month   day dep_time sched_dep_time dep_delay arr_time
 ##       &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;
@@ -661,12 +706,11 @@ select(flights, air_time, everything())</code></pre>
 ## # … with 336,766 more rows, and 11 more variables: sched_arr_time &lt;int&gt;,
 ## #   arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;,
 ## #   dest &lt;chr&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
-<p>Remarks: - if you just need a single variable, you could use <code>pull</code>. - you could use <code>rename</code> to rename columns</p>
 </div>
 </div>
 <div id="filter-picks-cases-based-on-their-values" class="section level2">
 <h2><code>filter</code>: picks cases based on their values</h2>
-<pre class="r"><code>filter(flights, origin == &quot;JFK&quot;)</code></pre>
+<pre class="r"><code>flights %&gt;% filter(origin == &quot;JFK&quot;)</code></pre>
 <pre><code>## # A tibble: 111,279 x 19
 ##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
 ##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
@@ -683,7 +727,7 @@ select(flights, air_time, everything())</code></pre>
 ## # … with 111,269 more rows, and 11 more variables: arr_delay &lt;dbl&gt;,
 ## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
 ## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
-<pre class="r"><code>filter(flights, distance &gt; 1000)</code></pre>
+<pre class="r"><code>flights %&gt;% filter(distance &gt; 1000)</code></pre>
 <pre><code>## # A tibble: 147,105 x 19
 ##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
 ##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
@@ -701,7 +745,7 @@ select(flights, air_time, everything())</code></pre>
 ## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
 ## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
 <pre class="r"><code># note that we are using a single `&amp;` instead of `&amp;&amp;` as in base R
-filter(flights, origin == &quot;JFK&quot; &amp; distance &gt; 1000)</code></pre>
+flights %&gt;% filter(origin == &quot;JFK&quot; &amp; distance &gt; 1000)</code></pre>
 <pre><code>## # A tibble: 62,071 x 19
 ##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
 ##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
@@ -718,7 +762,7 @@ filter(flights, origin == &quot;JFK&quot; &amp; distance &gt; 1000)</code></pre>
 ## # … with 62,061 more rows, and 11 more variables: arr_delay &lt;dbl&gt;,
 ## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
 ## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
-<pre class="r"><code>filter(flights, distance &lt; 500 | distance &gt; 1000)</code></pre>
+<pre class="r"><code>flights %&gt;% filter(distance &lt; 500 | distance &gt; 1000)</code></pre>
 <pre><code>## # A tibble: 227,322 x 19
 ##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
 ##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
@@ -735,7 +779,7 @@ filter(flights, origin == &quot;JFK&quot; &amp; distance &gt; 1000)</code></pre>
 ## # … with 227,312 more rows, and 11 more variables: arr_delay &lt;dbl&gt;,
 ## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
 ## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
-<pre class="r"><code>filter(flights, !between(distance, 500, 1000))</code></pre>
+<pre class="r"><code>flights %&gt;% filter(!between(distance, 500, 1000))</code></pre>
 <pre><code>## # A tibble: 227,322 x 19
 ##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
 ##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
@@ -753,7 +797,7 @@ filter(flights, origin == &quot;JFK&quot; &amp; distance &gt; 1000)</code></pre>
 ## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
 ## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
 <pre class="r"><code># only keep the complete cases
-filter(flights, complete.cases(flights))</code></pre>
+flights %&gt;% filter(complete.cases(.))</code></pre>
 <pre><code>## # A tibble: 327,346 x 19
 ##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
 ##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
@@ -774,21 +818,6 @@ filter(flights, complete.cases(flights))</code></pre>
 <div id="chaining-and-piping" class="section level2">
 <h2>Chaining and piping</h2>
 <p>Very often, we will need to use multiple <code>dplyr</code> verbs, for example</p>
-<pre class="r"><code>filter(select(flights, origin, arr_time), origin == &quot;JFK&quot;)</code></pre>
-<pre><code>## # A tibble: 111,279 x 2
-##    origin arr_time
-##    &lt;chr&gt;     &lt;int&gt;
-##  1 JFK         923
-##  2 JFK        1004
-##  3 JFK         838
-##  4 JFK         849
-##  5 JFK         853
-##  6 JFK         924
-##  7 JFK         702
-##  8 JFK         837
-##  9 JFK         945
-## 10 JFK         925
-## # … with 111,269 more rows</code></pre>
 <pre class="r"><code># the pipe operator %&gt;% increases readability
 flights %&gt;%
   select(origin, air_time) %&gt;%
@@ -827,7 +856,8 @@ flights %&gt;%
 ##  9 JFK          64
 ## 10 JFK          54
 ## # … with 55,511 more rows</code></pre>
-<pre class="r"><code>mean_air_time &lt;- flights %&gt;%
+<pre class="r"><code># maybe we want to calculate mean_air_time first
+mean_air_time &lt;- flights %&gt;%
   pull(air_time) %&gt;%
   mean(na.rm = TRUE)
 flights %&gt;%
@@ -847,7 +877,7 @@ flights %&gt;%
 ##  9 JFK         192
 ## 10 JFK         323
 ## # … with 53,548 more rows</code></pre>
-<pre class="r"><code># what if there is a name colision?
+<pre class="r"><code># what if there is a name collision?
 air_time &lt;- flights %&gt;%
   pull(air_time) %&gt;%
   mean(na.rm = TRUE)
@@ -868,26 +898,7 @@ flights %&gt;%
 ##  9 JFK         192
 ## 10 JFK         323
 ## # … with 53,548 more rows</code></pre>
-<pre class="r"><code># you could use . to represent the working data frame
-flights %&gt;%
-  filter(complete.cases(.))</code></pre>
-<pre><code>## # A tibble: 327,346 x 19
-##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
-##  1  2013     1     1      517            515         2      830            819
-##  2  2013     1     1      533            529         4      850            830
-##  3  2013     1     1      542            540         2      923            850
-##  4  2013     1     1      544            545        -1     1004           1022
-##  5  2013     1     1      554            600        -6      812            837
-##  6  2013     1     1      554            558        -4      740            728
-##  7  2013     1     1      555            600        -5      913            854
-##  8  2013     1     1      557            600        -3      709            723
-##  9  2013     1     1      557            600        -3      838            846
-## 10  2013     1     1      558            600        -2      753            745
-## # … with 327,336 more rows, and 11 more variables: arr_delay &lt;dbl&gt;,
-## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
-## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
-<p>PS: use <code>slice</code> if you want particular rows</p>
+<p>Remarks: use <code>slice</code> if you want particular rows</p>
 <pre class="r"><code>flights %&gt;% slice(100:105)</code></pre>
 <pre><code>## # A tibble: 6 x 19
 ##    year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
@@ -979,15 +990,18 @@ flights %&gt;% transmute(
 <pre class="r"><code>some_data &lt;- tibble(
   x = c(3, 4, 1, 3, 1)
 )
-some_data %&gt;% mutate(row_number(), row_number(x), min_rank(x), percent_rank(x))</code></pre>
-<pre><code>## # A tibble: 5 x 5
-##       x `row_number()` `row_number(x)` `min_rank(x)` `percent_rank(x)`
-##   &lt;dbl&gt;          &lt;int&gt;           &lt;int&gt;         &lt;int&gt;             &lt;dbl&gt;
-## 1     3              1               3             3               0.5
-## 2     4              2               5             5               1  
-## 3     1              3               1             1               0  
-## 4     3              4               4             3               0.5
-## 5     1              5               2             1               0</code></pre>
+some_data %&gt;% 
+  mutate(row_number(), row_number(x), min_rank(x), dense_rank(x), percent_rank(x), cume_dist(x), ntile(x, 3))</code></pre>
+<pre><code>## # A tibble: 5 x 8
+##       x `row_number()` `row_number(x)` `min_rank(x)` `dense_rank(x)`
+##   &lt;dbl&gt;          &lt;int&gt;           &lt;int&gt;         &lt;int&gt;           &lt;int&gt;
+## 1     3              1               3             3               2
+## 2     4              2               5             5               3
+## 3     1              3               1             1               1
+## 4     3              4               4             3               2
+## 5     1              5               2             1               1
+## # … with 3 more variables: `percent_rank(x)` &lt;dbl&gt;, `cume_dist(x)` &lt;dbl&gt;,
+## #   `ntile(x, 3)` &lt;int&gt;</code></pre>
 </div>
 <div id="lead-and-lag" class="section level3">
 <h3><code>lead</code> and <code>lag</code></h3>
@@ -1216,7 +1230,7 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
 ##  9 BGR       46     375
 ## 10 BHM       45     297
 ## # … with 95 more rows</code></pre>
-<pre class="r"><code># group multiple variables
+<pre class="r"><code># group by multiple variables
 
 (per_day &lt;- flights %&gt;%
   group_by(year, month, day) %&gt;%
@@ -1264,8 +1278,8 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
 <div id="other-useful-functions" class="section level2">
 <h2>Other useful functions</h2>
 <pre class="r"><code>flights %&gt;% glimpse()</code></pre>
-<pre><code>## Observations: 336,776
-## Variables: 19
+<pre><code>## Rows: 336,776
+## Columns: 19
 ## $ year           &lt;int&gt; 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013, …
 ## $ month          &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
 ## $ day            &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
@@ -1289,11 +1303,11 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
 <pre><code>## # A tibble: 5 x 19
 ##    year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
 ##   &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
-## 1  2013     2    15     1106           1115        -9     1428           1425
-## 2  2013     6    19      807            810        -3     1041           1020
-## 3  2013     2    14     1833           1835        -2     2140           2157
-## 4  2013     9     8     1250           1250         0     1403           1420
-## 5  2013     9    27     2229           2125        64     2338           2247
+## 1  2013    12    27     1353           1250        63     1523           1433
+## 2  2013     3     9     1558           1550         8     1857           1858
+## 3  2013     8    31     1721           1703        18     1948           1912
+## 4  2013     3    17     1935           1930         5     2109           2129
+## 5  2013     2    18     1558           1600        -2     1904           1900
 ## # … with 11 more variables: arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;,
 ## #   tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;,
 ## #   hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
@@ -1395,13 +1409,12 @@ df2 &lt;- tibble(name = c(1, 3), a = 10, b = &quot;a&quot;)</code></pre>
 <li>Each observation must have its own row (wide format).</li>
 <li>Each value must have its own cell.</li>
 </ul>
-<p>Using the datasets from R for Data Science to show that the same data could be organised in different ways.</p>
-<pre class="r"><code># make sure you have tidyr 1.0
-library(tidyr)</code></pre>
+<p>Using the datasets from R for Data Science to show that the same data could be organized in different ways.</p>
 <p><code>pivot_longer</code> is the replacement for <code>gather()</code> and <code>pivot_wider()</code> is the replacement for <code>spread()</code>. Both are designed to be simpler and can handle more cases than gather and spread.</p>
 <div id="pivot-longer" class="section level3">
 <h3>Pivot longer</h3>
-<pre class="r"><code>relig_income %&gt;%
+<pre class="r"><code># make sure you have tidyr 1.0
+relig_income %&gt;%
   pivot_longer(-religion, names_to = &quot;income&quot;, values_to = &quot;count&quot;)</code></pre>
 <pre><code>## # A tibble: 180 x 3
 ##    religion income             count

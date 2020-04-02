@@ -37,30 +37,100 @@ So what is tidyverse?
 
 ## Pipe operator
 
-```{r}
-x1 <- 1:5
-x2 <- 2:6
-sqrt(sum((x2 - x1)^2))
+We are going to detour a bit to talk about pipe operator.
+Pipe operator is a powerful way to make your code much cleaner and readible by
 
-(x2 - x1)^2 %>%
-  sum() %>%
-  sqrt()
+- structuring sequences of data operations left-to-right (as opposed to from the inside and out),
+- avoiding nested function calls,
+- minimizing the need for local variables and function definitions, and
+- making it easy to add steps anywhere in the sequence of operations.
+
+The operators pipe their left-hand side values forward into expressions that
+appear on the right-hand side, i.e. one can replace `f(x)` with 
+`x %>% f()`, where `%>%` is the (main) pipe-operator. When coupling 
+several function calls with the pipe-operator, the benefit will become
+more apparent. Consider this pseudo example:
+
+```{r, eval = FALSE}
+raw_data <- read.csv("/path/to/data/file.csv")
+sub_data <- subset(raw_data, variable_a > x)
+new_data <- transform(sub_data, variable_c = variable_a / variable_b)
+the_data <- head(new_data, 100)
+```
+However, the local variables are really not necessary, so one liner could be
+
+```{r, eval = FALSE}
+the_data <- head(
+  transform(
+    subset(
+      read.csv("/path/to/data/file.csv"), 
+    variable_a > x), 
+  variable_c = variable_a / variable_b), 
+100)
 ```
 
+But that is too hard to read and reason. If we use pipe operator,
+
+```{r, eval = FALSE}
+the_data <- read.csv("/path/to/data/file.csv") %>%
+  subset(variable_a > x) %>%
+  transform(variable_c = variable_a / variable_b) %>%
+  head(100)
+```
+
+Hint: In RStudio, you could use `Ctrl + Shift + M` (or `Cmd + Shift + M`) to insert the pipe operator.
+
+
+### Basic usage
+
+* `x %>% f` or `x %>% f()` is equivalent to `f(x)`
+* `x %>% f(y)` is equivalent to `f(x, y)`
+* `x %>% f %>% g %>% h` is equivalent to `h(g(f(x)))`
+
+
 ```{r}
-# computer the binomial coefficients
-n <- 5
-x <- 0:5
-choose(n, x)
-n %>% choose(x)
-x %>% choose(n, .)
-list(n = 5, x = 0:5) %>% {
-  choose(.$n, .$x)
-}
+choose(5, 3)
+5 %>% choose(3)
 ```
 
 
-## dplyr basics
+### The argument placeholder
+
+* `x %>% f(y, .)` is equivalent to `f(y, x)`
+* `x %>% f(y, z = .)` is equivalent to `f(y, z = x)`
+
+```{r}
+3 %>% choose(5, .)
+3 %>% choose(5, k = .)
+```
+
+### Re-using the placeholder
+
+It is straightforward to use the placeholder several times
+in a right-hand side expression. However, when the placeholder
+only appears in a nested expressions magrittr will still apply
+the first-argument rule. The reason is that in most cases this
+results more clean code. 
+
+`x %>% f(y = nrow(.), z = ncol(.))` is equivalent to 
+   `f(x, y = nrow(x), z = ncol(x))`
+
+```{r}
+5 %>% choose(. - 2)
+```
+
+The behavior can be
+overruled by enclosing the right-hand side in braces:
+
+`x %>% {f(y = nrow(.), z = ncol(.))}` is equivalent to 
+   `f(y = nrow(x), z = ncol(x))`
+
+```{r}
+list(n = 5, k = 3) %>% {choose(.$n, .$k)}
+```
+
+
+## `dplyr` basics
 
 - It offers five basic verbs
   - `select`: picks variables based on their names
@@ -72,7 +142,7 @@ list(n = 5, x = 0:5) %>% {
 - These all combine naturally with `group_by` which allows you to perform any operation "by group". 
 
 
-## Obtain some Data
+## Obtain some data
 
 First of all, we need some data to work with. If the data is stored in a `csv`,
 
@@ -81,9 +151,11 @@ flights <- read_csv("flights.csv")
 ```
 
 We are using the `tidyverse` function `read_csv` to import the `flights.csv` instead of the obsolete base function `read.csv`.
-- `read_csv` imports data as `tibble` which has better output
+- `read_csv` imports data as `tibble` which has better and more consistent handling of variables.
 - `read_csv` is often faster than `read.csv`
 - `read_csv` handles unicode characters better
+
+There are also `read_tsv` and `read_delim` for reading tab-seperated or delimited files.
 
 
 The datasets are actually obtained from the R package `nycflights13`
@@ -100,7 +172,7 @@ To select arrival and departure times,
 ```{r}
 # old way to do it
 # flights[, c("arr_time", "dep_time")]
-select(flights, arr_time, dep_time)
+flights %>% select(arr_time, dep_time)
 ```
 
 ### I don't see why it's useful
@@ -109,46 +181,48 @@ select(flights, arr_time, dep_time)
 
 ```{r}
 # colon `:` specifies all the variables between the columns of `dep_time` and `arr_time`
-select(flights, dep_time:arr_time)
+flights %>% select(dep_time:arr_time)
 # all the columns start with arr_
-select(flights, starts_with("arr_"))
+flights %>% select(starts_with("arr_"))
 # all the columns end with _time
-select(flights, ends_with("_time"))
+flights %>% select(ends_with("_time"))
 # all the columns contain dep
-select(flights, contains("dep"))
+flights %>% select(contains("dep"))
 # all the columns do not contain dep
-select(flights, -contains("dep"))
+flights %>% select(-contains("dep"))
 # using regular expression (later of the course)
-select(flights, matches("^(arr|dep)_"))
-# of course, we could select everything
-select(flights, everything())
-# move air_time to the front
-select(flights, air_time, everything())
+flights %>% select(matches("^(arr|dep)_"))
 ```
 
-Remarks:
+Related verbs:
 - if you just need a single variable, you could use `pull`.
 - you could use `rename` to rename columns
+
+```{r}
+# of course, we could select everything
+flights %>% select(everything())
+# move air_time to the front
+flights %>% select(air_time, everything())
+```
 
 
 ## `filter`: picks cases based on their values
 
 ```{r}
-filter(flights, origin == "JFK")
-filter(flights, distance > 1000)
+flights %>% filter(origin == "JFK")
+flights %>% filter(distance > 1000)
 # note that we are using a single `&` instead of `&&` as in base R
-filter(flights, origin == "JFK" & distance > 1000)
-filter(flights, distance < 500 | distance > 1000)
-filter(flights, !between(distance, 500, 1000))
+flights %>% filter(origin == "JFK" & distance > 1000)
+flights %>% filter(distance < 500 | distance > 1000)
+flights %>% filter(!between(distance, 500, 1000))
 # only keep the complete cases
-filter(flights, complete.cases(flights))
+flights %>% filter(complete.cases(.))
 ```
 
 ## Chaining and piping
 
 Very often, we will need to use multiple `dplyr` verbs, for example 
 ```{r}
-filter(select(flights, origin, arr_time), origin == "JFK")
 # the pipe operator %>% increases readability
 flights %>%
   select(origin, air_time) %>%
@@ -163,28 +237,26 @@ flights %>%
   select(origin, air_time) %>%
   filter(origin == "JFK", air_time < mean(air_time, na.rm = TRUE))
 
+# maybe we want to calculate mean_air_time first
 mean_air_time <- flights %>%
   pull(air_time) %>%
   mean(na.rm = TRUE)
 flights %>%
   select(origin, air_time) %>%
   filter(origin == "JFK", air_time > mean_air_time)
+```
 
-# what if there is a name colision?
+```{r}
+# what if there is a name collision?
 air_time <- flights %>%
   pull(air_time) %>%
   mean(na.rm = TRUE)
 flights %>%
   select(origin, air_time) %>%
   filter(origin == "JFK", air_time > {{ air_time }})
-
-# you could use . to represent the working data frame
-flights %>%
-  filter(complete.cases(.))
 ```
 
-
-PS: use `slice` if you want particular rows
+Remarks: use `slice` if you want particular rows
 
 ```{r}
 flights %>% slice(100:105)
@@ -203,7 +275,6 @@ flights %>% mutate(
   gain_per_hour = gain / (air_time / 60)
 )
 ```
-
 
 ```{r}
 # `transmute` only keep the new variables
@@ -226,7 +297,8 @@ flights %>% transmute(
 some_data <- tibble(
   x = c(3, 4, 1, 3, 1)
 )
-some_data %>% mutate(row_number(), row_number(x), min_rank(x), percent_rank(x))
+some_data %>% 
+  mutate(row_number(), row_number(x), min_rank(x), dense_rank(x), percent_rank(x), cume_dist(x), ntile(x, 3))
 ```
 
 ### `lead` and `lag`
@@ -314,7 +386,7 @@ flights %>%
     flights = n()
   )
 
-# group multiple variables
+# group by multiple variables
 
 (per_day <- flights %>%
   group_by(year, month, day) %>%
@@ -341,6 +413,8 @@ flights %>% top_n(3, air_time)
 ## dplyr 1.0
 
 Talk about `across`.
+
+
 
 ## Two-table verbs
 
@@ -387,14 +461,8 @@ There are three interrelated rules which make a dataset tidy
 - Each observation must have its own row (wide format).
 - Each value must have its own cell.
 
-Using the datasets from R for Data Science to show that the same data could be organised in different ways.
+Using the datasets from R for Data Science to show that the same data could be organized in different ways.
 
-
-
-```{r}
-# make sure you have tidyr 1.0
-library(tidyr)
-```
 
 `pivot_longer` is the replacement for `gather()` and `pivot_wider()` is the replacement for `spread()`.
 Both are designed to be simpler and can handle more cases than gather and spread.
@@ -402,6 +470,7 @@ Both are designed to be simpler and can handle more cases than gather and spread
 ### Pivot longer
 
 ```{r}
+# make sure you have tidyr 1.0
 relig_income %>%
   pivot_longer(-religion, names_to = "income", values_to = "count")
 ```
