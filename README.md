@@ -104,7 +104,7 @@ Assuming that you have `git` installed,
 
   - Open RStudio -\> New Project -\> Version Control -\> Git -\> paste
     the URL:
-    <https://github.com/ucdavis-sta141c-sq-2020/sta141c-notes.git>
+    <https://github.com/ucdavis-sta141b-sq-2020/sta141b-notes.git>
   - Choose a directory to create the project
   - You could make any changes to the repo as you wish.
   - To fetch updates
