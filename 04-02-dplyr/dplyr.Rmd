@@ -1,5 +1,5 @@
 ---
-title: "Tidy Data"
+title: "Data Wrangling"
 output: 
   html_document: 
     toc: yes
@@ -453,21 +453,64 @@ df2 <- tibble(name = c(1, 3), a = 10, b = "a")
 df1 %>% inner_join(df2, by = c("id" = "name"))
 ```
 
-## Tidy Data
 
-There are three interrelated rules which make a dataset tidy
+## Row bind or column bind data frames
 
-- Each variable must have its own column (long format).
-- Each observation must have its own row (wide format).
-- Each value must have its own cell.
+```{r}
+df1 <- tibble(a = "hello", b = 2, c = 3)
+df2 <- tibble(a = "world", b = 4)
+```
+
+```{r}
+df1 %>% bind_rows(df2)
+```
+
+
+The `bind_rows` function from `dplyr` is better than `rbind` in several ways.
+
+- `bind_rows` handles missing values
+- `bind_rows` doesn't automatically convert types
+
+
+```{r, error = TRUE}
+df1 <- tibble(a = "hello", b = 2, c = 3)
+df2 <- tibble(a = "world", b = 4)
+df1 %>% rbind(df2)
+```
+
+
+```{r, error = TRUE}
+df1 <- tibble(a = "hello", b = 2)
+df2 <- tibble(a = 2, b = 4)
+df1 %>% rbind(df2)
+df1 %>% bind_rows(df2)
+```
+
+Likewise, `bind_cols` is safer than `cbind`.
+
+```{r}
+df1 <- tibble(x = 1:5)
+df2 <- tibble(x = 1:10)
+```
+
+```{r}
+df1 %>% cbind(df2)
+```
+
+```{r, error = TRUE}
+df1 %>% bind_cols(df2)
+```
+
+
+## Pivoting Data
 
 Using the datasets from R for Data Science to show that the same data could be organized in different ways.
 
-
-`pivot_longer` is the replacement for `gather()` and `pivot_wider()` is the replacement for `spread()`.
-Both are designed to be simpler and can handle more cases than gather and spread.
-
 ### Pivot longer
+
+```{r}
+relig_income
+```
 
 ```{r}
 # make sure you have tidyr 1.0
@@ -475,6 +518,9 @@ relig_income %>%
   pivot_longer(-religion, names_to = "income", values_to = "count")
 ```
 
+```{r}
+billboard
+```
 
 ```{r}
 billboard %>%
@@ -491,11 +537,19 @@ billboard %>%
 ### Pivot wider
 
 ```{r}
+fish_encounters
+```
+
+```{r}
 fish_encounters %>% pivot_wider(
   names_from = station,
   values_from = seen,
   values_fill = list(seen = 0)
 )
+```
+
+```{r}
+us_rent_income
 ```
 
 ```{r}

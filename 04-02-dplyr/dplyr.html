@@ -11,7 +11,7 @@
 
 
 
-<title>Tidy Data</title>
+<title>Data Wrangling</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -374,7 +374,7 @@ summary {
 
 
 
-<h1 class="title toc-ignore">Tidy Data</h1>
+<h1 class="title toc-ignore">Data Wrangling</h1>
 
 </div>
 
@@ -410,7 +410,8 @@ summary {
 <ul>
 <li><a href="#join-by-the-same-variable-of-different-names">Join by the same variable of different names</a></li>
 </ul></li>
-<li><a href="#tidy-data">Tidy Data</a>
+<li><a href="#row-bind-or-column-bind-data-frames">Row bind or column bind data frames</a></li>
+<li><a href="#pivoting-data">Pivoting Data</a>
 <ul>
 <li><a href="#pivot-longer">Pivot longer</a></li>
 <li><a href="#pivot-wider">Pivot wider</a></li>
@@ -1145,7 +1146,7 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
   summarize(n = n())</code></pre>
 <pre><code>## # A tibble: 4,044 x 2
 ##    tailnum     n
-##  * &lt;chr&gt;   &lt;int&gt;
+##    &lt;chr&gt;   &lt;int&gt;
 ##  1 D942DN      4
 ##  2 N0EGMQ    371
 ##  3 N10156    153
@@ -1162,7 +1163,7 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
   tally() # shorthand</code></pre>
 <pre><code>## # A tibble: 4,044 x 2
 ##    tailnum     n
-##  * &lt;chr&gt;   &lt;int&gt;
+##    &lt;chr&gt;   &lt;int&gt;
 ##  1 D942DN      4
 ##  2 N0EGMQ    371
 ##  3 N10156    153
@@ -1177,7 +1178,7 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
 <pre class="r"><code>flights %&gt;% count(tailnum) # another shorthand</code></pre>
 <pre><code>## # A tibble: 4,044 x 2
 ##    tailnum     n
-##  * &lt;chr&gt;   &lt;int&gt;
+##    &lt;chr&gt;   &lt;int&gt;
 ##  1 D942DN      4
 ##  2 N0EGMQ    371
 ##  3 N10156    153
@@ -1198,7 +1199,7 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
   )</code></pre>
 <pre><code>## # A tibble: 4,044 x 4
 ##    tailnum count  dist  delay
-##  * &lt;chr&gt;   &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt;
+##    &lt;chr&gt;   &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt;
 ##  1 D942DN      4  854. 31.5  
 ##  2 N0EGMQ    371  676.  9.98 
 ##  3 N10156    153  758. 12.7  
@@ -1218,7 +1219,7 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
   )</code></pre>
 <pre><code>## # A tibble: 105 x 3
 ##    dest  planes flights
-##  * &lt;chr&gt;  &lt;int&gt;   &lt;int&gt;
+##    &lt;chr&gt;  &lt;int&gt;   &lt;int&gt;
 ##  1 ABQ      108     254
 ##  2 ACK       58     265
 ##  3 ALB      172     439
@@ -1272,7 +1273,7 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
   summarize(flights = sum(flights)))</code></pre>
 <pre><code>## # A tibble: 1 x 2
 ##    year flights
-## * &lt;int&gt;   &lt;int&gt;
+##   &lt;int&gt;   &lt;int&gt;
 ## 1  2013  336776</code></pre>
 </div>
 <div id="other-useful-functions" class="section level2">
@@ -1303,11 +1304,11 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
 <pre><code>## # A tibble: 5 x 19
 ##    year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
 ##   &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
-## 1  2013    12    27     1353           1250        63     1523           1433
-## 2  2013     3     9     1558           1550         8     1857           1858
-## 3  2013     8    31     1721           1703        18     1948           1912
-## 4  2013     3    17     1935           1930         5     2109           2129
-## 5  2013     2    18     1558           1600        -2     1904           1900
+## 1  2013     8     1     1041            959        42     1200           1125
+## 2  2013     1    14     1451           1459        -8     1721           1737
+## 3  2013     1    19     1705           1415       170     1920           1638
+## 4  2013     1     9     1455           1455         0     1756           1825
+## 5  2013     5     7      624            630        -6      803            832
 ## # … with 11 more variables: arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;,
 ## #   tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;,
 ## #   hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
@@ -1359,24 +1360,24 @@ flights %&gt;% top_n(3, air_time)</code></pre>
 <pre class="r"><code>df1 %&gt;% inner_join(df2, by = &quot;id&quot;)</code></pre>
 <pre><code>## # A tibble: 1 x 4
 ##      id     v     a b    
-## * &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
+##   &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
 ## 1     1     2    10 a</code></pre>
 <pre class="r"><code>df1 %&gt;% left_join(df2, by = &quot;id&quot;)</code></pre>
 <pre><code>## # A tibble: 2 x 4
 ##      id     v     a b    
-## * &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
+##   &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
 ## 1     1     2    10 a    
 ## 2     2     1    NA &lt;NA&gt;</code></pre>
 <pre class="r"><code>df1 %&gt;% right_join(df2, by = &quot;id&quot;)</code></pre>
 <pre><code>## # A tibble: 2 x 4
 ##      id     v     a b    
-## * &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
+##   &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
 ## 1     1     2    10 a    
 ## 2     3    NA    10 a</code></pre>
 <pre class="r"><code>df1 %&gt;% full_join(df2, by = &quot;id&quot;)</code></pre>
 <pre><code>## # A tibble: 3 x 4
 ##      id     v     a b    
-## * &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
+##   &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
 ## 1     1     2    10 a    
 ## 2     2     1    NA &lt;NA&gt; 
 ## 3     3    NA    10 a</code></pre>
@@ -1397,22 +1398,86 @@ df2 &lt;- tibble(name = c(1, 3), a = 10, b = &quot;a&quot;)</code></pre>
 <pre class="r"><code>df1 %&gt;% inner_join(df2, by = c(&quot;id&quot; = &quot;name&quot;))</code></pre>
 <pre><code>## # A tibble: 1 x 4
 ##      id     v     a b    
-## * &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
+##   &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
 ## 1     1     2    10 a</code></pre>
 </div>
 </div>
-<div id="tidy-data" class="section level2">
-<h2>Tidy Data</h2>
-<p>There are three interrelated rules which make a dataset tidy</p>
+<div id="row-bind-or-column-bind-data-frames" class="section level2">
+<h2>Row bind or column bind data frames</h2>
+<pre class="r"><code>df1 &lt;- tibble(a = &quot;hello&quot;, b = 2, c = 3)
+df2 &lt;- tibble(a = &quot;world&quot;, b = 4)</code></pre>
+<pre class="r"><code>df1 %&gt;% bind_rows(df2)</code></pre>
+<pre><code>## # A tibble: 2 x 3
+##   a         b     c
+##   &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 hello     2     3
+## 2 world     4    NA</code></pre>
+<p>The <code>bind_rows</code> function from <code>dplyr</code> is better than <code>rbind</code> in several ways.</p>
 <ul>
-<li>Each variable must have its own column (long format).</li>
-<li>Each observation must have its own row (wide format).</li>
-<li>Each value must have its own cell.</li>
+<li><code>bind_rows</code> handles missing values</li>
+<li><code>bind_rows</code> doesn’t automatically convert types</li>
 </ul>
+<pre class="r"><code>df1 &lt;- tibble(a = &quot;hello&quot;, b = 2, c = 3)
+df2 &lt;- tibble(a = &quot;world&quot;, b = 4)
+df1 %&gt;% rbind(df2)</code></pre>
+<pre><code>## Error in rbind(deparse.level, ...): numbers of columns of arguments do not match</code></pre>
+<pre class="r"><code>df1 &lt;- tibble(a = &quot;hello&quot;, b = 2)
+df2 &lt;- tibble(a = 2, b = 4)
+df1 %&gt;% rbind(df2)</code></pre>
+<pre><code>## # A tibble: 2 x 2
+##   a         b
+##   &lt;chr&gt; &lt;dbl&gt;
+## 1 hello     2
+## 2 2         4</code></pre>
+<pre class="r"><code>df1 %&gt;% bind_rows(df2)</code></pre>
+<pre><code>## Error: Column `a` can&#39;t be converted from character to numeric</code></pre>
+<p>Likewise, <code>bind_cols</code> is safer than <code>cbind</code>.</p>
+<pre class="r"><code>df1 &lt;- tibble(x = 1:5)
+df2 &lt;- tibble(x = 1:10)</code></pre>
+<pre class="r"><code>df1 %&gt;% cbind(df2)</code></pre>
+<pre><code>##    x  x
+## 1  1  1
+## 2  2  2
+## 3  3  3
+## 4  4  4
+## 5  5  5
+## 6  1  6
+## 7  2  7
+## 8  3  8
+## 9  4  9
+## 10 5 10</code></pre>
+<pre class="r"><code>df1 %&gt;% bind_cols(df2)</code></pre>
+<pre><code>## Error: Argument 2 must be length 5, not 10</code></pre>
+</div>
+<div id="pivoting-data" class="section level2">
+<h2>Pivoting Data</h2>
 <p>Using the datasets from R for Data Science to show that the same data could be organized in different ways.</p>
-<p><code>pivot_longer</code> is the replacement for <code>gather()</code> and <code>pivot_wider()</code> is the replacement for <code>spread()</code>. Both are designed to be simpler and can handle more cases than gather and spread.</p>
 <div id="pivot-longer" class="section level3">
 <h3>Pivot longer</h3>
+<pre class="r"><code>relig_income</code></pre>
+<pre><code>## # A tibble: 18 x 11
+##    religion `&lt;$10k` `$10-20k` `$20-30k` `$30-40k` `$40-50k` `$50-75k` `$75-100k`
+##    &lt;chr&gt;      &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;
+##  1 Agnostic      27        34        60        81        76       137        122
+##  2 Atheist       12        27        37        52        35        70         73
+##  3 Buddhist      27        21        30        34        33        58         62
+##  4 Catholic     418       617       732       670       638      1116        949
+##  5 Don’t k…      15        14        15        11        10        35         21
+##  6 Evangel…     575       869      1064       982       881      1486        949
+##  7 Hindu          1         9         7         9        11        34         47
+##  8 Histori…     228       244       236       238       197       223        131
+##  9 Jehovah…      20        27        24        24        21        30         15
+## 10 Jewish        19        19        25        25        30        95         69
+## 11 Mainlin…     289       495       619       655       651      1107        939
+## 12 Mormon        29        40        48        51        56       112         85
+## 13 Muslim         6         7         9        10         9        23         16
+## 14 Orthodox      13        17        23        32        32        47         38
+## 15 Other C…       9         7        11        13        13        14         18
+## 16 Other F…      20        33        40        46        49        63         46
+## 17 Other W…       5         2         3         4         2         7          3
+## 18 Unaffil…     217       299       374       365       341       528        407
+## # … with 3 more variables: `$100-150k` &lt;dbl&gt;, `&gt;150k` &lt;dbl&gt;, `Don&#39;t
+## #   know/refused` &lt;dbl&gt;</code></pre>
 <pre class="r"><code># make sure you have tidyr 1.0
 relig_income %&gt;%
   pivot_longer(-religion, names_to = &quot;income&quot;, values_to = &quot;count&quot;)</code></pre>
@@ -1430,6 +1495,32 @@ relig_income %&gt;%
 ##  9 Agnostic &gt;150k                 84
 ## 10 Agnostic Don&#39;t know/refused    96
 ## # … with 170 more rows</code></pre>
+<pre class="r"><code>billboard</code></pre>
+<pre><code>## # A tibble: 317 x 79
+##    artist track date.entered   wk1   wk2   wk3   wk4   wk5   wk6   wk7   wk8
+##    &lt;chr&gt;  &lt;chr&gt; &lt;date&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 2 Pac  Baby… 2000-02-26      87    82    72    77    87    94    99    NA
+##  2 2Ge+h… The … 2000-09-02      91    87    92    NA    NA    NA    NA    NA
+##  3 3 Doo… Kryp… 2000-04-08      81    70    68    67    66    57    54    53
+##  4 3 Doo… Loser 2000-10-21      76    76    72    69    67    65    55    59
+##  5 504 B… Wobb… 2000-04-15      57    34    25    17    17    31    36    49
+##  6 98^0   Give… 2000-08-19      51    39    34    26    26    19     2     2
+##  7 A*Tee… Danc… 2000-07-08      97    97    96    95   100    NA    NA    NA
+##  8 Aaliy… I Do… 2000-01-29      84    62    51    41    38    35    35    38
+##  9 Aaliy… Try … 2000-03-18      59    53    38    28    21    18    16    14
+## 10 Adams… Open… 2000-08-26      76    76    74    69    68    67    61    58
+## # … with 307 more rows, and 68 more variables: wk9 &lt;dbl&gt;, wk10 &lt;dbl&gt;,
+## #   wk11 &lt;dbl&gt;, wk12 &lt;dbl&gt;, wk13 &lt;dbl&gt;, wk14 &lt;dbl&gt;, wk15 &lt;dbl&gt;, wk16 &lt;dbl&gt;,
+## #   wk17 &lt;dbl&gt;, wk18 &lt;dbl&gt;, wk19 &lt;dbl&gt;, wk20 &lt;dbl&gt;, wk21 &lt;dbl&gt;, wk22 &lt;dbl&gt;,
+## #   wk23 &lt;dbl&gt;, wk24 &lt;dbl&gt;, wk25 &lt;dbl&gt;, wk26 &lt;dbl&gt;, wk27 &lt;dbl&gt;, wk28 &lt;dbl&gt;,
+## #   wk29 &lt;dbl&gt;, wk30 &lt;dbl&gt;, wk31 &lt;dbl&gt;, wk32 &lt;dbl&gt;, wk33 &lt;dbl&gt;, wk34 &lt;dbl&gt;,
+## #   wk35 &lt;dbl&gt;, wk36 &lt;dbl&gt;, wk37 &lt;dbl&gt;, wk38 &lt;dbl&gt;, wk39 &lt;dbl&gt;, wk40 &lt;dbl&gt;,
+## #   wk41 &lt;dbl&gt;, wk42 &lt;dbl&gt;, wk43 &lt;dbl&gt;, wk44 &lt;dbl&gt;, wk45 &lt;dbl&gt;, wk46 &lt;dbl&gt;,
+## #   wk47 &lt;dbl&gt;, wk48 &lt;dbl&gt;, wk49 &lt;dbl&gt;, wk50 &lt;dbl&gt;, wk51 &lt;dbl&gt;, wk52 &lt;dbl&gt;,
+## #   wk53 &lt;dbl&gt;, wk54 &lt;dbl&gt;, wk55 &lt;dbl&gt;, wk56 &lt;dbl&gt;, wk57 &lt;dbl&gt;, wk58 &lt;dbl&gt;,
+## #   wk59 &lt;dbl&gt;, wk60 &lt;dbl&gt;, wk61 &lt;dbl&gt;, wk62 &lt;dbl&gt;, wk63 &lt;dbl&gt;, wk64 &lt;dbl&gt;,
+## #   wk65 &lt;dbl&gt;, wk66 &lt;lgl&gt;, wk67 &lt;lgl&gt;, wk68 &lt;lgl&gt;, wk69 &lt;lgl&gt;, wk70 &lt;lgl&gt;,
+## #   wk71 &lt;lgl&gt;, wk72 &lt;lgl&gt;, wk73 &lt;lgl&gt;, wk74 &lt;lgl&gt;, wk75 &lt;lgl&gt;, wk76 &lt;lgl&gt;</code></pre>
 <pre class="r"><code>billboard %&gt;%
   pivot_longer(
     cols = starts_with(&quot;wk&quot;),
@@ -1456,6 +1547,21 @@ relig_income %&gt;%
 </div>
 <div id="pivot-wider" class="section level3">
 <h3>Pivot wider</h3>
+<pre class="r"><code>fish_encounters</code></pre>
+<pre><code>## # A tibble: 114 x 3
+##    fish  station  seen
+##    &lt;fct&gt; &lt;fct&gt;   &lt;int&gt;
+##  1 4842  Release     1
+##  2 4842  I80_1       1
+##  3 4842  Lisbon      1
+##  4 4842  Rstr        1
+##  5 4842  Base_TD     1
+##  6 4842  BCE         1
+##  7 4842  BCW         1
+##  8 4842  BCE2        1
+##  9 4842  BCW2        1
+## 10 4842  MAE         1
+## # … with 104 more rows</code></pre>
 <pre class="r"><code>fish_encounters %&gt;% pivot_wider(
   names_from = station,
   values_from = seen,
@@ -1483,6 +1589,21 @@ relig_income %&gt;%
 ## 17 4863        1     1      0     0       0     0     0     0     0     0     0
 ## 18 4864        1     1      0     0       0     0     0     0     0     0     0
 ## 19 4865        1     1      1     0       0     0     0     0     0     0     0</code></pre>
+<pre class="r"><code>us_rent_income</code></pre>
+<pre><code>## # A tibble: 104 x 5
+##    GEOID NAME       variable estimate   moe
+##    &lt;chr&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt;
+##  1 01    Alabama    income      24476   136
+##  2 01    Alabama    rent          747     3
+##  3 02    Alaska     income      32940   508
+##  4 02    Alaska     rent         1200    13
+##  5 04    Arizona    income      27517   148
+##  6 04    Arizona    rent          972     4
+##  7 05    Arkansas   income      23789   165
+##  8 05    Arkansas   rent          709     5
+##  9 06    California income      29454   109
+## 10 06    California rent         1358     3
+## # … with 94 more rows</code></pre>
 <pre class="r"><code>us_rent_income %&gt;%
   pivot_wider(names_from = variable, values_from = c(estimate, moe))</code></pre>
 <pre><code>## # A tibble: 52 x 6
