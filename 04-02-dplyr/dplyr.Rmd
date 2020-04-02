@@ -87,6 +87,9 @@ Hint: In RStudio, you could use `Ctrl + Shift + M` (or `Cmd + Shift + M`) to ins
 * `x %>% f(y)` is equivalent to `f(x, y)`
 * `x %>% f %>% g %>% h` is equivalent to `h(g(f(x)))`
 
+```{r}
+c(1, 2) %>% sum
+```
 
 ```{r}
 choose(5, 3)
@@ -188,6 +191,8 @@ flights %>% select(starts_with("arr_"))
 flights %>% select(ends_with("_time"))
 # all the columns contain dep
 flights %>% select(contains("dep"))
+# remove particular columns
+flights %>% select(-year)
 # all the columns do not contain dep
 flights %>% select(-contains("dep"))
 # using regular expression (later of the course)
@@ -197,6 +202,16 @@ flights %>% select(matches("^(arr|dep)_"))
 Related verbs:
 - if you just need a single variable, you could use `pull`.
 - you could use `rename` to rename columns
+
+```{r}
+# flights$arr_time
+flights %>% pull(arr_time)
+```
+
+```{r}
+flights %>% rename(y = year)
+```
+
 
 ```{r}
 # of course, we could select everything
@@ -209,14 +224,18 @@ flights %>% select(air_time, everything())
 ## `filter`: picks cases based on their values
 
 ```{r}
+# flights[, flights$origin == "JFK"]
+# subset(flights, origin == "JFK")
 flights %>% filter(origin == "JFK")
 flights %>% filter(distance > 1000)
 # note that we are using a single `&` instead of `&&` as in base R
 flights %>% filter(origin == "JFK" & distance > 1000)
+flights %>% filter(origin == "JFK", distance > 1000)
 flights %>% filter(distance < 500 | distance > 1000)
 flights %>% filter(!between(distance, 500, 1000))
 # only keep the complete cases
-flights %>% filter(complete.cases(.))
+flights %>% filter(complete.cases(.))  # filter(flights, complete.cases(flights))
+flights %>% drop_na()  # same, but more efficient
 ```
 
 ## Chaining and piping
@@ -230,6 +249,14 @@ flights %>%
   filter(air_time < 500) %>%
   rename(airtime = air_time)
 ```
+```{r}
+# slightly more efficient
+flights %>% 
+  select(origin, airtime = air_time) %>% 
+  filter(origin == "JFK", airtime < 500)
+```
+
+
 
 ```{r}
 # a few more examples
