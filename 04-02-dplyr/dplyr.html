@@ -404,13 +404,15 @@ summary {
 </ul></li>
 <li><a href="#arrange-changes-the-ordering-of-the-rows"><code>arrange</code>: changes the ordering of the rows</a></li>
 <li><a href="#summarize-and-group_by-operations"><code>summarize</code> and <code>group_by</code> operations</a></li>
+<li><a href="#across">Across</a></li>
 <li><a href="#other-useful-functions">Other useful functions</a></li>
-<li><a href="#dplyr-1.0">dplyr 1.0</a></li>
 <li><a href="#two-table-verbs">Two-table verbs</a>
 <ul>
 <li><a href="#join-by-the-same-variable-of-different-names">Join by the same variable of different names</a></li>
 </ul></li>
 <li><a href="#row-bind-or-column-bind-data-frames">Row bind or column bind data frames</a></li>
+<li><a href="#crossing-and-nesting">Crossing and nesting</a></li>
+<li><a href="#completion-and-missing-values">Completion and missing values</a></li>
 <li><a href="#pivoting-data">Pivoting Data</a>
 <ul>
 <li><a href="#pivot-longer">Pivot longer</a></li>
@@ -464,10 +466,13 @@ the_data &lt;- head(new_data, 100)</code></pre>
 <pre class="r"><code>the_data &lt;- head(
   transform(
     subset(
-      read.csv(&quot;/path/to/data/file.csv&quot;), 
-    variable_a &gt; x), 
-  variable_c = variable_a / variable_b), 
-100)</code></pre>
+      read.csv(&quot;/path/to/data/file.csv&quot;),
+      variable_a &gt; x
+    ),
+    variable_c = variable_a / variable_b
+  ),
+  100
+)</code></pre>
 <p>But that is too hard to read and reason. If we use pipe operator,</p>
 <pre class="r"><code>the_data &lt;- read.csv(&quot;/path/to/data/file.csv&quot;) %&gt;%
   subset(variable_a &gt; x) %&gt;%
@@ -481,7 +486,7 @@ the_data &lt;- head(new_data, 100)</code></pre>
 <li><code>x %&gt;% f(y)</code> is equivalent to <code>f(x, y)</code></li>
 <li><code>x %&gt;% f %&gt;% g %&gt;% h</code> is equivalent to <code>h(g(f(x)))</code></li>
 </ul>
-<pre class="r"><code>c(1, 2) %&gt;% sum</code></pre>
+<pre class="r"><code>c(1, 2) %&gt;% sum()</code></pre>
 <pre><code>## [1] 3</code></pre>
 <pre class="r"><code>choose(5, 3)</code></pre>
 <pre><code>## [1] 10</code></pre>
@@ -507,7 +512,9 @@ the_data &lt;- head(new_data, 100)</code></pre>
 <pre><code>## [1] 10</code></pre>
 <p>The behavior can be overruled by enclosing the right-hand side in braces:</p>
 <p><code>x %&gt;% {f(y = nrow(.), z = ncol(.))}</code> is equivalent to <code>f(y = nrow(x), z = ncol(x))</code></p>
-<pre class="r"><code>list(n = 5, k = 3) %&gt;% {choose(.$n, .$k)}</code></pre>
+<pre class="r"><code>list(n = 5, k = 3) %&gt;% {
+  choose(.$n, .$k)
+}</code></pre>
 <pre><code>## [1] 10</code></pre>
 </div>
 </div>
@@ -699,8 +706,15 @@ flights %&gt;% pull(arr_time)</code></pre>
 ##  [46]  922  837  931  815  910 1023  936  932  936 1021 1037 1002  854  949 1007
 ##  [61]  948  959  944 1027 1008 1008  907  959 1123 1058  852 1151 1023  911  850
 ##  [76] 1017 1013 1111 1020 1052  959 1041 1049  857 1041 1011  854 1047  918 1104
-##  [91] 1038 1107 1043 1059 1135 1119  939 1041 1025  955
-##  [ reached getOption(&quot;max.print&quot;) -- omitted 336676 entries ]</code></pre>
+##  [91] 1038 1107 1043 1059 1135 1119  939 1041 1025  955 1056 1039 1103 1053 1057
+## [106] 1022  949  900  903 1132 1103 1015 1118 1006 1043 1043 1048 1100 1006 1047
+## [121] 1026 1040 1103 1047 1005 1254  940 1249 1153  932 1014 1019 1151 1027 1058
+## [136] 1136 1145 1027 1150 1152 1117 1018 1052 1021 1006 1134 1210 1027 1311 1053
+## [151] 1138 1001 1155 1032 1102 1215 1046 1147 1143 1226 1222 1140 1516 1107 1124
+## [166] 1157 1102 1140 1223 1211 1048 1045 1207 1309 1134 1020 1004 1228 1331 1241
+## [181] 1219 1346 1244 1058 1313 1206 1052 1039 1152 1237 1026 1404 1221 1233 1231
+## [196] 1028 1220 1218 1237 1121
+##  [ reached getOption(&quot;max.print&quot;) -- omitted 336576 entries ]</code></pre>
 <pre class="r"><code>flights %&gt;% rename(y = year)</code></pre>
 <pre><code>## # A tibble: 336,776 x 19
 ##        y month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
@@ -864,7 +878,7 @@ flights %&gt;% filter(origin == &quot;JFK&quot; &amp; distance &gt; 1000)</code>
 ## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
 ## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
 <pre class="r"><code># only keep the complete cases
-flights %&gt;% filter(complete.cases(.))  # filter(flights, complete.cases(flights))</code></pre>
+flights %&gt;% filter(complete.cases(.)) # filter(flights, complete.cases(flights))</code></pre>
 <pre><code>## # A tibble: 327,346 x 19
 ##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
 ##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
@@ -881,7 +895,7 @@ flights %&gt;% filter(complete.cases(.))  # filter(flights, complete.cases(fligh
 ## # … with 327,336 more rows, and 11 more variables: arr_delay &lt;dbl&gt;,
 ## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
 ## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
-<pre class="r"><code>flights %&gt;% drop_na()  # same, but more efficient</code></pre>
+<pre class="r"><code>flights %&gt;% drop_na() # same, but more efficient</code></pre>
 <pre><code>## # A tibble: 327,346 x 19
 ##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
 ##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
@@ -923,8 +937,8 @@ flights %&gt;%
 ## 10 JFK        175
 ## # … with 108,727 more rows</code></pre>
 <pre class="r"><code># slightly more efficient
-flights %&gt;% 
-  select(origin, airtime = air_time) %&gt;% 
+flights %&gt;%
+  select(origin, airtime = air_time) %&gt;%
   filter(origin == &quot;JFK&quot;, airtime &lt; 500)</code></pre>
 <pre><code>## # A tibble: 108,737 x 2
 ##    origin airtime
@@ -1092,8 +1106,16 @@ flights %&gt;% transmute(
 <pre class="r"><code>some_data &lt;- tibble(
   x = c(3, 4, 1, 3, 1)
 )
-some_data %&gt;% 
-  mutate(row_number(), row_number(x), min_rank(x), dense_rank(x), percent_rank(x), cume_dist(x), ntile(x, 3))</code></pre>
+some_data %&gt;%
+  mutate(
+    row_number(),
+    row_number(x),
+    min_rank(x),
+    dense_rank(x),
+    percent_rank(x),
+    cume_dist(x),
+    ntile(x, 3)
+  )</code></pre>
 <pre><code>## # A tibble: 5 x 8
 ##       x `row_number()` `row_number(x)` `min_rank(x)` `dense_rank(x)`
 ##   &lt;dbl&gt;          &lt;int&gt;           &lt;int&gt;         &lt;int&gt;           &lt;int&gt;
@@ -1247,7 +1269,7 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
   summarize(n = n())</code></pre>
 <pre><code>## # A tibble: 4,044 x 2
 ##    tailnum     n
-##    &lt;chr&gt;   &lt;int&gt;
+##  * &lt;chr&gt;   &lt;int&gt;
 ##  1 D942DN      4
 ##  2 N0EGMQ    371
 ##  3 N10156    153
@@ -1264,7 +1286,7 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
   tally() # shorthand</code></pre>
 <pre><code>## # A tibble: 4,044 x 2
 ##    tailnum     n
-##    &lt;chr&gt;   &lt;int&gt;
+##  * &lt;chr&gt;   &lt;int&gt;
 ##  1 D942DN      4
 ##  2 N0EGMQ    371
 ##  3 N10156    153
@@ -1279,7 +1301,7 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
 <pre class="r"><code>flights %&gt;% count(tailnum) # another shorthand</code></pre>
 <pre><code>## # A tibble: 4,044 x 2
 ##    tailnum     n
-##    &lt;chr&gt;   &lt;int&gt;
+##  * &lt;chr&gt;   &lt;int&gt;
 ##  1 D942DN      4
 ##  2 N0EGMQ    371
 ##  3 N10156    153
@@ -1300,7 +1322,7 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
   )</code></pre>
 <pre><code>## # A tibble: 4,044 x 4
 ##    tailnum count  dist  delay
-##    &lt;chr&gt;   &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt;
+##  * &lt;chr&gt;   &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt;
 ##  1 D942DN      4  854. 31.5  
 ##  2 N0EGMQ    371  676.  9.98 
 ##  3 N10156    153  758. 12.7  
@@ -1320,7 +1342,7 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
   )</code></pre>
 <pre><code>## # A tibble: 105 x 3
 ##    dest  planes flights
-##    &lt;chr&gt;  &lt;int&gt;   &lt;int&gt;
+##  * &lt;chr&gt;  &lt;int&gt;   &lt;int&gt;
 ##  1 ABQ      108     254
 ##  2 ACK       58     265
 ##  3 ALB      172     439
@@ -1352,7 +1374,7 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
 ##  9  2013     1     9     902
 ## 10  2013     1    10     932
 ## # … with 355 more rows</code></pre>
-<pre class="r"><code>(per_month &lt;- per_day %&gt;% 
+<pre class="r"><code>(per_month &lt;- per_day %&gt;%
   summarize(flights = sum(flights)))</code></pre>
 <pre><code>## # A tibble: 12 x 3
 ## # Groups:   year [1]
@@ -1374,8 +1396,101 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
   summarize(flights = sum(flights)))</code></pre>
 <pre><code>## # A tibble: 1 x 2
 ##    year flights
-##   &lt;int&gt;   &lt;int&gt;
+## * &lt;int&gt;   &lt;int&gt;
 ## 1  2013  336776</code></pre>
+</div>
+<div id="across" class="section level2">
+<h2>Across</h2>
+<p>The <code>across</code> function requires dplyr 1.0, which at the point of writing, has not been released yet.</p>
+<p>Interested reader could install it by (a toolchain would be required to install it from source)</p>
+<pre class="r"><code>devtools::install_github(&quot;tidyverse/dplyr&quot;)</code></pre>
+<p>See <a href="https://www.tidyverse.org/blog/2020/04/dplyr-1-0-0-colwise/" class="uri">https://www.tidyverse.org/blog/2020/04/dplyr-1-0-0-colwise/</a></p>
+<p>Suppose, we want to compuate the mean for the all numeric columns of <code>flights</code>. Naively, we could do</p>
+<pre class="r"><code>flights %&gt;%
+  group_by(origin) %&gt;%
+  summarize(
+    dep_time = mean(dep_time, na.rm = TRUE),
+    sched_dep_time = mean(sched_dep_time, na.rm = TRUE),
+    dep_delay = mean(dep_delay, na.rm = TRUE),
+    arr_time = mean(arr_time, na.rm = TRUE),
+    sched_arr_time = mean(sched_arr_time, na.rm = TRUE),
+    arr_delay = mean(arr_delay, na.rm = TRUE),
+    flight = mean(flight, na.rm = TRUE),
+    air_time = mean(air_time, na.rm = TRUE),
+    distance = mean(distance, na.rm = TRUE)
+  )</code></pre>
+<pre><code>## # A tibble: 3 x 10
+##   origin dep_time sched_dep_time dep_delay arr_time sched_arr_time arr_delay
+## * &lt;chr&gt;     &lt;dbl&gt;          &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;          &lt;dbl&gt;     &lt;dbl&gt;
+## 1 EWR       1337.          1322.      15.1    1492.          1528.      9.11
+## 2 JFK       1399.          1402.      12.1    1520.          1565.      5.55
+## 3 LGA       1310.          1308.      10.3    1494.          1516.      5.78
+## # … with 3 more variables: flight &lt;dbl&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;</code></pre>
+<p>With the new <code>across</code> function, it is as easy as:</p>
+<pre class="r"><code>flights %&gt;%
+  group_by(origin) %&gt;%
+  summarize(across(dep_time:distance, mean, na.rm = TRUE))</code></pre>
+<pre><code>## Warning in mean.default(col, ...): argument is not numeric or logical: returning
+## NA
+
+## Warning in mean.default(col, ...): argument is not numeric or logical: returning
+## NA
+
+## Warning in mean.default(col, ...): argument is not numeric or logical: returning
+## NA
+
+## Warning in mean.default(col, ...): argument is not numeric or logical: returning
+## NA
+
+## Warning in mean.default(col, ...): argument is not numeric or logical: returning
+## NA
+
+## Warning in mean.default(col, ...): argument is not numeric or logical: returning
+## NA
+
+## Warning in mean.default(col, ...): argument is not numeric or logical: returning
+## NA
+
+## Warning in mean.default(col, ...): argument is not numeric or logical: returning
+## NA
+
+## Warning in mean.default(col, ...): argument is not numeric or logical: returning
+## NA</code></pre>
+<pre><code>## # A tibble: 3 x 13
+##   origin dep_time sched_dep_time dep_delay arr_time sched_arr_time arr_delay
+## * &lt;chr&gt;     &lt;dbl&gt;          &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;          &lt;dbl&gt;     &lt;dbl&gt;
+## 1 EWR       1337.          1322.      15.1    1492.          1528.      9.11
+## 2 JFK       1399.          1402.      12.1    1520.          1565.      5.55
+## 3 LGA       1310.          1308.      10.3    1494.          1516.      5.78
+## # … with 6 more variables: carrier &lt;dbl&gt;, flight &lt;dbl&gt;, tailnum &lt;dbl&gt;,
+## #   dest &lt;dbl&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;</code></pre>
+<p>We have accidentally included some non numeric columns.</p>
+<pre class="r"><code>flights %&gt;%
+  group_by(origin) %&gt;%
+  summarize(
+    across(dep_time:distance &amp; is.numeric, mean, na.rm = TRUE)
+  )</code></pre>
+<pre><code>## # A tibble: 3 x 10
+##   origin dep_time sched_dep_time dep_delay arr_time sched_arr_time arr_delay
+## * &lt;chr&gt;     &lt;dbl&gt;          &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;          &lt;dbl&gt;     &lt;dbl&gt;
+## 1 EWR       1337.          1322.      15.1    1492.          1528.      9.11
+## 2 JFK       1399.          1402.      12.1    1520.          1565.      5.55
+## 3 LGA       1310.          1308.      10.3    1494.          1516.      5.78
+## # … with 3 more variables: flight &lt;dbl&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;</code></pre>
+<p>We could also use predicate functions in <code>across</code> and use different functions to summerize different variables.</p>
+<pre class="r"><code>flights %&gt;%
+  group_by(origin) %&gt;%
+  summarize(
+    across(ends_with(&quot;time&quot;), mean, na.rm = TRUE),
+    across(ends_with(&quot;delay&quot;), mean, na.rm = TRUE, trim = 0.8),
+  )</code></pre>
+<pre><code>## # A tibble: 3 x 8
+##   origin dep_time sched_dep_time arr_time sched_arr_time air_time dep_delay
+## * &lt;chr&gt;     &lt;dbl&gt;          &lt;dbl&gt;    &lt;dbl&gt;          &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
+## 1 EWR       1337.          1322.    1492.          1528.     153.        -1
+## 2 JFK       1399.          1402.    1520.          1565.     178.        -1
+## 3 LGA       1310.          1308.    1494.          1516.     118.        -3
+## # … with 1 more variable: arr_delay &lt;dbl&gt;</code></pre>
 </div>
 <div id="other-useful-functions" class="section level2">
 <h2>Other useful functions</h2>
@@ -1405,11 +1520,11 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
 <pre><code>## # A tibble: 5 x 19
 ##    year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
 ##   &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
-## 1  2013     9     1      815            818        -3     1105           1124
-## 2  2013     1    26     1351           1250        61     1636           1550
-## 3  2013    10    23      604            600         4      724            721
-## 4  2013    11    18      938            936         2     1035           1052
-## 5  2013     8     7      606            602         4      813            728
+## 1  2013     9    17      723            729        -6      909            934
+## 2  2013     7    22     2145           2007        98      132           2259
+## 3  2013     8    13      752            755        -3     1143           1057
+## 4  2013     9    18      819            830       -11     1017           1030
+## 5  2013     8    27     1123           1130        -7     1244           1305
 ## # … with 11 more variables: arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;,
 ## #   tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;,
 ## #   hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
@@ -1425,10 +1540,6 @@ flights %&gt;% top_n(3, air_time)</code></pre>
 ## # … with 11 more variables: arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;,
 ## #   tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;,
 ## #   hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
-</div>
-<div id="dplyr-1.0" class="section level2">
-<h2>dplyr 1.0</h2>
-<p>Talk about <code>across</code>.</p>
 </div>
 <div id="two-table-verbs" class="section level2">
 <h2>Two-table verbs</h2>
@@ -1461,24 +1572,24 @@ flights %&gt;% top_n(3, air_time)</code></pre>
 <pre class="r"><code>df1 %&gt;% inner_join(df2, by = &quot;id&quot;)</code></pre>
 <pre><code>## # A tibble: 1 x 4
 ##      id     v     a b    
-##   &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
+## * &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
 ## 1     1     2    10 a</code></pre>
 <pre class="r"><code>df1 %&gt;% left_join(df2, by = &quot;id&quot;)</code></pre>
 <pre><code>## # A tibble: 2 x 4
 ##      id     v     a b    
-##   &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
+## * &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
 ## 1     1     2    10 a    
 ## 2     2     1    NA &lt;NA&gt;</code></pre>
 <pre class="r"><code>df1 %&gt;% right_join(df2, by = &quot;id&quot;)</code></pre>
 <pre><code>## # A tibble: 2 x 4
 ##      id     v     a b    
-##   &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
+## * &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
 ## 1     1     2    10 a    
 ## 2     3    NA    10 a</code></pre>
 <pre class="r"><code>df1 %&gt;% full_join(df2, by = &quot;id&quot;)</code></pre>
 <pre><code>## # A tibble: 3 x 4
 ##      id     v     a b    
-##   &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
+## * &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
 ## 1     1     2    10 a    
 ## 2     2     1    NA &lt;NA&gt; 
 ## 3     3    NA    10 a</code></pre>
@@ -1499,7 +1610,7 @@ df2 &lt;- tibble(name = c(1, 3), a = 10, b = &quot;a&quot;)</code></pre>
 <pre class="r"><code>df1 %&gt;% inner_join(df2, by = c(&quot;id&quot; = &quot;name&quot;))</code></pre>
 <pre><code>## # A tibble: 1 x 4
 ##      id     v     a b    
-##   &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
+## * &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;
 ## 1     1     2    10 a</code></pre>
 </div>
 </div>
@@ -1510,7 +1621,7 @@ df2 &lt;- tibble(a = &quot;world&quot;, b = 4)</code></pre>
 <pre class="r"><code>df1 %&gt;% bind_rows(df2)</code></pre>
 <pre><code>## # A tibble: 2 x 3
 ##   a         b     c
-##   &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+## * &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
 ## 1 hello     2     3
 ## 2 world     4    NA</code></pre>
 <p>The <code>bind_rows</code> function from <code>dplyr</code> is better than <code>rbind</code> in several ways.</p>
@@ -1531,7 +1642,7 @@ df1 %&gt;% rbind(df2)</code></pre>
 ## 1 hello     2
 ## 2 2         4</code></pre>
 <pre class="r"><code>df1 %&gt;% bind_rows(df2)</code></pre>
-<pre><code>## Error: Column `a` can&#39;t be converted from character to numeric</code></pre>
+<pre><code>## Error: No common type for `..1$a` &lt;character&gt; and `..2$a` &lt;double&gt;.</code></pre>
 <p>Likewise, <code>bind_cols</code> is safer than <code>cbind</code>.</p>
 <pre class="r"><code>df1 &lt;- tibble(x = 1:5)
 df2 &lt;- tibble(x = 1:10)</code></pre>
@@ -1548,7 +1659,92 @@ df2 &lt;- tibble(x = 1:10)</code></pre>
 ## 9  4  9
 ## 10 5 10</code></pre>
 <pre class="r"><code>df1 %&gt;% bind_cols(df2)</code></pre>
-<pre><code>## Error: Argument 2 must be length 5, not 10</code></pre>
+<pre><code>## Error: No common size for `..1`, size 5, and `..2`, size 10.</code></pre>
+</div>
+<div id="crossing-and-nesting" class="section level2">
+<h2>Crossing and nesting</h2>
+<p>Crossing allows you to examine all the combinations between variables.</p>
+<p>For example, we know that not all routes between <code>origin</code> and <code>dest</code> exist.</p>
+<pre class="r"><code>all_existing_routes &lt;- flights %&gt;% expand(nesting(origin, dest))
+all_possible_routes &lt;- flights %&gt;% expand(crossing(origin, dest))
+# or simply  
+all_possible_routes &lt;- flights %&gt;% expand(origin, dest)</code></pre>
+<pre class="r"><code># these routes do not exist
+all_possible_routes %&gt;% 
+  anti_join(all_existing_routes)</code></pre>
+<pre><code>## Joining, by = c(&quot;origin&quot;, &quot;dest&quot;)</code></pre>
+<pre><code>## # A tibble: 91 x 2
+##    origin dest 
+##    &lt;chr&gt;  &lt;chr&gt;
+##  1 EWR    ABQ  
+##  2 EWR    ACK  
+##  3 EWR    BGR  
+##  4 EWR    BHM  
+##  5 EWR    BUR  
+##  6 EWR    CAK  
+##  7 EWR    CHO  
+##  8 EWR    CRW  
+##  9 EWR    EYW  
+## 10 EWR    ILM  
+## # … with 81 more rows</code></pre>
+</div>
+<div id="completion-and-missing-values" class="section level2">
+<h2>Completion and missing values</h2>
+<p><code>expand</code> only keeps on the variables specified. If you want to join the original data, you could use <code>complete</code>.</p>
+<pre class="r"><code>flights %&gt;% 
+  group_by(origin, dest) %&gt;% 
+  summarize(air_time = mean(air_time, na.rm = TRUE)) %&gt;%
+  ungroup() %&gt;%
+  complete(origin, dest, fill = list(&quot;air_time&quot; = Inf))</code></pre>
+<pre><code>## # A tibble: 315 x 3
+##    origin dest  air_time
+##    &lt;chr&gt;  &lt;chr&gt;    &lt;dbl&gt;
+##  1 EWR    ABQ      Inf  
+##  2 EWR    ACK      Inf  
+##  3 EWR    ALB       31.8
+##  4 EWR    ANC      413. 
+##  5 EWR    ATL      112. 
+##  6 EWR    AUS      211. 
+##  7 EWR    AVL       89.8
+##  8 EWR    BDL       25.5
+##  9 EWR    BGR      Inf  
+## 10 EWR    BHM      Inf  
+## # … with 305 more rows</code></pre>
+<pre class="r"><code>df &lt;- tribble(
+  ~x, ~y,
+   1,  2,
+  NA,  3,
+   3, NA
+)
+df</code></pre>
+<pre><code>## # A tibble: 3 x 2
+##       x     y
+##   &lt;dbl&gt; &lt;dbl&gt;
+## 1     1     2
+## 2    NA     3
+## 3     3    NA</code></pre>
+<pre class="r"><code># remove all rows with missing values
+df %&gt;% drop_na()</code></pre>
+<pre><code>## # A tibble: 1 x 2
+##       x     y
+##   &lt;dbl&gt; &lt;dbl&gt;
+## 1     1     2</code></pre>
+<pre class="r"><code># fill values by copying downward
+df %&gt;% fill(x, y)</code></pre>
+<pre><code>## # A tibble: 3 x 2
+##       x     y
+##   &lt;dbl&gt; &lt;dbl&gt;
+## 1     1     2
+## 2     1     3
+## 3     3     3</code></pre>
+<pre class="r"><code>df %&gt;% 
+  replace_na(list(x = Inf, y = -Inf))</code></pre>
+<pre><code>## # A tibble: 3 x 2
+##       x     y
+##   &lt;dbl&gt; &lt;dbl&gt;
+## 1     1     2
+## 2   Inf     3
+## 3     3  -Inf</code></pre>
 </div>
 <div id="pivoting-data" class="section level2">
 <h2>Pivoting Data</h2>
@@ -1627,23 +1823,22 @@ relig_income %&gt;%
     cols = starts_with(&quot;wk&quot;),
     names_to = &quot;week&quot;,
     names_prefix = &quot;wk&quot;,
-    names_ptypes = list(week = integer()),
     values_to = &quot;rank&quot;,
     values_drop_na = TRUE,
   )</code></pre>
 <pre><code>## # A tibble: 5,307 x 5
-##    artist  track                   date.entered  week  rank
-##    &lt;chr&gt;   &lt;chr&gt;                   &lt;date&gt;       &lt;int&gt; &lt;dbl&gt;
-##  1 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26       1    87
-##  2 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26       2    82
-##  3 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26       3    72
-##  4 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26       4    77
-##  5 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26       5    87
-##  6 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26       6    94
-##  7 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26       7    99
-##  8 2Ge+her The Hardest Part Of ... 2000-09-02       1    91
-##  9 2Ge+her The Hardest Part Of ... 2000-09-02       2    87
-## 10 2Ge+her The Hardest Part Of ... 2000-09-02       3    92
+##    artist  track                   date.entered week   rank
+##    &lt;chr&gt;   &lt;chr&gt;                   &lt;date&gt;       &lt;chr&gt; &lt;dbl&gt;
+##  1 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26   1        87
+##  2 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26   2        82
+##  3 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26   3        72
+##  4 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26   4        77
+##  5 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26   5        87
+##  6 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26   6        94
+##  7 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26   7        99
+##  8 2Ge+her The Hardest Part Of ... 2000-09-02   1        91
+##  9 2Ge+her The Hardest Part Of ... 2000-09-02   2        87
+## 10 2Ge+her The Hardest Part Of ... 2000-09-02   3        92
 ## # … with 5,297 more rows</code></pre>
 </div>
 <div id="pivot-wider" class="section level3">
@@ -1726,8 +1921,9 @@ relig_income %&gt;%
 <div id="references" class="section level2">
 <h2>References</h2>
 <ul>
-<li><p>Documentation of dplyr <a href="https://dplyr.tidyverse.org/" class="uri">https://dplyr.tidyverse.org/</a></p></li>
-<li><p>R for Data Science <a href="http://r4ds.had.co.nz/tidy-data.html" class="uri">http://r4ds.had.co.nz/tidy-data.html</a></p></li>
+<li>R for Data Science <a href="http://r4ds.had.co.nz/tidy-data.html" class="uri">http://r4ds.had.co.nz/tidy-data.html</a></li>
+<li>Documentation of dplyr <a href="https://dplyr.tidyverse.org/" class="uri">https://dplyr.tidyverse.org/</a></li>
+<li>Documentation of tidyr <a href="https://tidyr.tidyverse.org/" class="uri">https://tidyr.tidyverse.org/</a></li>
 </ul>
 </div>
 
