@@ -403,8 +403,10 @@ summary {
 <li><a href="#recode-values"><code>recode</code> values</a></li>
 </ul></li>
 <li><a href="#arrange-changes-the-ordering-of-the-rows"><code>arrange</code>: changes the ordering of the rows</a></li>
-<li><a href="#summarize-and-group_by-operations"><code>summarize</code> and <code>group_by</code> operations</a></li>
-<li><a href="#across">Across</a></li>
+<li><a href="#summarize-and-group_by-operations"><code>summarize</code> and <code>group_by</code> operations</a>
+<ul>
+<li><a href="#across-columns"><code>across</code> columns</a></li>
+</ul></li>
 <li><a href="#other-useful-functions">Other useful functions</a></li>
 <li><a href="#two-table-verbs">Two-table verbs</a>
 <ul>
@@ -706,15 +708,8 @@ flights %&gt;% pull(arr_time)</code></pre>
 ##  [46]  922  837  931  815  910 1023  936  932  936 1021 1037 1002  854  949 1007
 ##  [61]  948  959  944 1027 1008 1008  907  959 1123 1058  852 1151 1023  911  850
 ##  [76] 1017 1013 1111 1020 1052  959 1041 1049  857 1041 1011  854 1047  918 1104
-##  [91] 1038 1107 1043 1059 1135 1119  939 1041 1025  955 1056 1039 1103 1053 1057
-## [106] 1022  949  900  903 1132 1103 1015 1118 1006 1043 1043 1048 1100 1006 1047
-## [121] 1026 1040 1103 1047 1005 1254  940 1249 1153  932 1014 1019 1151 1027 1058
-## [136] 1136 1145 1027 1150 1152 1117 1018 1052 1021 1006 1134 1210 1027 1311 1053
-## [151] 1138 1001 1155 1032 1102 1215 1046 1147 1143 1226 1222 1140 1516 1107 1124
-## [166] 1157 1102 1140 1223 1211 1048 1045 1207 1309 1134 1020 1004 1228 1331 1241
-## [181] 1219 1346 1244 1058 1313 1206 1052 1039 1152 1237 1026 1404 1221 1233 1231
-## [196] 1028 1220 1218 1237 1121
-##  [ reached getOption(&quot;max.print&quot;) -- omitted 336576 entries ]</code></pre>
+##  [91] 1038 1107 1043 1059 1135 1119  939 1041 1025  955
+##  [ reached getOption(&quot;max.print&quot;) -- omitted 336676 entries ]</code></pre>
 <pre class="r"><code>flights %&gt;% rename(y = year)</code></pre>
 <pre><code>## # A tibble: 336,776 x 19
 ##        y month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
@@ -1398,13 +1393,13 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
 ##    year flights
 ## * &lt;int&gt;   &lt;int&gt;
 ## 1  2013  336776</code></pre>
-</div>
-<div id="across" class="section level2">
-<h2>Across</h2>
+<div id="across-columns" class="section level3">
+<h3><code>across</code> columns</h3>
 <p>The <code>across</code> function requires dplyr 1.0, which at the point of writing, has not been released yet.</p>
-<p>Interested reader could install it by (a toolchain would be required to install it from source)</p>
-<pre class="r"><code>devtools::install_github(&quot;tidyverse/dplyr&quot;)</code></pre>
-<p>See <a href="https://www.tidyverse.org/blog/2020/04/dplyr-1-0-0-colwise/" class="uri">https://www.tidyverse.org/blog/2020/04/dplyr-1-0-0-colwise/</a></p>
+<p>Interested reader could install the development version of <code>dplyr</code> with</p>
+<pre class="r"><code># take your own risk to install it!!
+devtools::install_github(&quot;tidyverse/dplyr&quot;)</code></pre>
+<p>A toolchain would be required to install it from source. See <a href="https://www.tidyverse.org/blog/2020/04/dplyr-1-0-0-colwise/" class="uri">https://www.tidyverse.org/blog/2020/04/dplyr-1-0-0-colwise/</a></p>
 <p>Suppose, we want to compuate the mean for the all numeric columns of <code>flights</code>. Naively, we could do</p>
 <pre class="r"><code>flights %&gt;%
   group_by(origin) %&gt;%
@@ -1492,6 +1487,7 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
 ## 3 LGA       1310.          1308.    1494.          1516.     118.        -3
 ## # … with 1 more variable: arr_delay &lt;dbl&gt;</code></pre>
 </div>
+</div>
 <div id="other-useful-functions" class="section level2">
 <h2>Other useful functions</h2>
 <pre class="r"><code>flights %&gt;% glimpse()</code></pre>
@@ -1520,11 +1516,11 @@ some_data2 %&gt;% mutate(diff1 = value - lag(value), diff2 = lead(value) - value
 <pre><code>## # A tibble: 5 x 19
 ##    year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
 ##   &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
-## 1  2013     9    17      723            729        -6      909            934
-## 2  2013     7    22     2145           2007        98      132           2259
-## 3  2013     8    13      752            755        -3     1143           1057
-## 4  2013     9    18      819            830       -11     1017           1030
-## 5  2013     8    27     1123           1130        -7     1244           1305
+## 1  2013     6    20     1530           1530         0     1637           1650
+## 2  2013    10    22     2116           2127       -11     2210           2237
+## 3  2013     6    24      947            945         2     1312           1305
+## 4  2013    11     8     1113           1115        -2     1240           1255
+## 5  2013     1    16     1454           1245       129     1602           1350
 ## # … with 11 more variables: arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;,
 ## #   tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;,
 ## #   hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
@@ -1749,6 +1745,19 @@ df %&gt;% fill(x, y)</code></pre>
 <div id="pivoting-data" class="section level2">
 <h2>Pivoting Data</h2>
 <p>Using the datasets from R for Data Science to show that the same data could be organized in different ways.</p>
+<p>In general, there are two formats,</p>
+<ul>
+<li>wide format
+<ul>
+<li>each subject has its own row</li>
+<li>a variable may take multiple columns</li>
+</ul></li>
+<li>long format
+<ul>
+<li>each variable has its own column</li>
+<li>a subject may take multiple rows</li>
+</ul></li>
+</ul>
 <div id="pivot-longer" class="section level3">
 <h3>Pivot longer</h3>
 <pre class="r"><code>relig_income</code></pre>

@@ -439,17 +439,18 @@ flights %>%
   summarize(flights = sum(flights)))
 ```
 
-## Across
+### `across` columns
 
 The `across` function requires dplyr 1.0, which at the point of writing, has not been released yet.
 
-Interested reader could install it by (a toolchain would be required to install it from source)
-
+Interested reader could install the development version of `dplyr` with
 ```r
+# take your own risk to install it!!
 devtools::install_github("tidyverse/dplyr")
 ```
-
+A toolchain would be required to install it from source.
 See https://www.tidyverse.org/blog/2020/04/dplyr-1-0-0-colwise/
+
 
 Suppose, we want to compuate the mean for the all numeric columns of `flights`. Naively, we could do
 
@@ -653,6 +654,15 @@ df %>%
 ## Pivoting Data
 
 Using the datasets from R for Data Science to show that the same data could be organized in different ways.
+
+In general, there are two formats,
+
+- wide format
+  - each subject has its own row
+  - a variable may take multiple columns
+- long format
+  - each variable has its own column
+  - a subject may take multiple rows
 
 ### Pivot longer
 
