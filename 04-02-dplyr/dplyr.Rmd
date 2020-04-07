@@ -307,6 +307,14 @@ flights %>% mutate(
   gain_per_hour = gain / (air_time / 60)
 )
 ```
+```{r}
+# remove a variable
+flights %>% mutate(
+  gain = arr_delay - dep_delay,
+  gain_per_hour = gain / (air_time / 60),
+  air_time = NULL
+)
+```
 
 ```{r}
 # `transmute` only keep the new variables
@@ -348,8 +356,13 @@ some_data2 <- tibble(
   time = 1:5,
   value = c(3, 4, 1, 3, 1)
 )
-some_data2 %>% mutate(diff1 = value - lag(value), diff2 = lead(value) - value)
+some_data2 %>% mutate(
+  diff1 = value - lag(value), 
+  diff2 = lead(value) - value
+)
 ```
+
+
 
 ### Conditional mutation
 
@@ -373,18 +386,17 @@ flights %>% transmute(
 
 ```{r}
 flight_distances %>% mutate(distance_type = recode(distance_type,
-  long = "long-distance",
-  mid = "mid-distance",
-  short = "short-distance"
+  "long" = "long-distance",
+  "mid" = "mid-distance",
+  "short" = "short-distance"
 ))
 ```
 
 ```{r}
 some_data %>% mutate(
   y = recode(x,
-    `1` = "one",
-    `3` = "three",
-    `4` = "four"
+    `1` = 10,
+    `3` = 30
   )
 )
 ```
@@ -398,7 +410,6 @@ flights %>% arrange(desc(dep_delay))
 ```
 
 ## `summarize` and `group_by` operations
-
 
 ```{r}
 flights %>%
@@ -418,23 +429,32 @@ flights %>%
     dist = mean(distance, na.rm = TRUE),
     delay = mean(arr_delay, na.rm = TRUE)
   )
+```
 
+
+```{r}
 flights %>%
   group_by(dest) %>%
   summarize(
     planes = n_distinct(tailnum),
     flights = n()
   )
+```
 
+
+```{r}
 # group by multiple variables
-
 (per_day <- flights %>%
   group_by(year, month, day) %>%
   summarize(flights = n()))
+```
 
+```{r}
 (per_month <- per_day %>%
   summarize(flights = sum(flights)))
+```
 
+```{r}
 (per_year <- per_month %>%
   summarize(flights = sum(flights)))
 ```
