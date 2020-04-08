@@ -27,10 +27,10 @@
 
 ## Material
 
-| Date  | Note         | HTML                                                                                    |
-| ----- | ------------ | --------------------------------------------------------------------------------------- |
-| 03-31 | Introduction | [introduction](README.md)                                                               |
-| 04-02 | dplyr        | [dplyr](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/04-02-dplyr/dplyr.html) |
+| Date  | Note                           | HTML                                                                                    |
+| ----- | ------------------------------ | --------------------------------------------------------------------------------------- |
+| 03-31 | Introduction                   | [introduction](README.md)                                                               |
+| 04-02 | [dplyr](04-02-dplyr/dplyr.Rmd) | [dplyr](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/04-02-dplyr/dplyr.html) |
 
 ## Links
 
