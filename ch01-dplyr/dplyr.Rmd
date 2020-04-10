@@ -298,19 +298,19 @@ flights %>% slice(100:105)
 
 ```{r}
 flights %>% mutate(
-  gain = arr_delay - dep_delay,
+  gain = dep_delay - arr_delay,
   speed = distance / air_time * 60
 )
 # we could refer to the columns just created
 flights %>% mutate(
-  gain = arr_delay - dep_delay,
+  gain = dep_delay - arr_delay,
   gain_per_hour = gain / (air_time / 60)
 )
 ```
 ```{r}
 # remove a variable
 flights %>% mutate(
-  gain = arr_delay - dep_delay,
+  gain = dep_delay - arr_delay,
   gain_per_hour = gain / (air_time / 60),
   air_time = NULL
 )
@@ -319,7 +319,7 @@ flights %>% mutate(
 ```{r}
 # `transmute` only keep the new variables
 flights %>% transmute(
-  gain = arr_delay - dep_delay,
+  gain = dep_delay - arr_delay,
   gain_per_hour = gain / (air_time / 60)
 )
 ```
