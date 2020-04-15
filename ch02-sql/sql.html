@@ -414,13 +414,13 @@ library(DBI)</code></pre>
 <p>a structured set of data held in a computer, especially one that is accessible in various ways.</p>
 </blockquote>
 <p>A relational database is a type of database that stores and provides access to data points that are related to one another. Relation databases are administrated by a Relational Database Management System (RDBMS). The data in RDBMS is stored in database objects called tables. A table is a collection of related data entries and it consists of columns and rows.</p>
-<p>There are many RDBMS - MySQL (owned by Oracle) - PostgreSQL (open source) - SQL Server (microsoft) - SQLite (open source, single file)</p>
-<p>What is SQL? Structured Query Language (or SQL) is a standard language for accessing and manipulating relational databaes. However, each RDMBS may have their own extension of the SQL language and their implmentation may vary too.</p>
+<p>There are many RDBMS - MySQL (owned by Oracle) - MariaDB (open source version MySQL) - PostgreSQL (open source, ANSI) - SQL Server (microsoft) - SQLite (open source, single file)</p>
+<p>What is SQL? Structured Query Language (or SQL) is a standard language for accessing and manipulating relational databases. However, each RDMBS may have their own extension of the SQL language and their implmentation may vary too.</p>
 <div id="connect-to-a-databse" class="section level2">
 <h2>Connect to a databse</h2>
 <p>We are going to use a popular database called Sakila <a href="https://www.jooq.org/sakila" class="uri">https://www.jooq.org/sakila</a>.</p>
 <p>The Sakila database is a nicely normalised schema modelling a DVD rental store, featuring things like films, actors, film-actor relationships, and a central inventory table that connects films, stores, and rentals.</p>
-<p>In the following, we are going to use both <code>sqlite</code> and <code>postgresql</code>.</p>
+<p>In the following, we are going to use <code>sqlite</code>, <code>postgresql</code> and <code>MySql</code>.</p>
 <div id="sqlite" class="section level3">
 <h3>SQLite</h3>
 <p>The database is called <code>sakila.sqlite</code>. You could either git clone from lectures repo or download using the code</p>
@@ -452,7 +452,7 @@ sakila_psql %&gt;% dbListTables()</code></pre>
 </div>
 <div id="mysql" class="section level3">
 <h3>MySQL</h3>
-<p>MySQL is another popular RDBMS.</p>
+<p>MySQL (MariaDB)) is another popular RDBMS.</p>
 <pre class="r"><code>sakila_mysql &lt;- dbConnect(RMariaDB::MariaDB(),
   dbname = &quot;DATA&quot;,
   user = &quot;student&quot;, password = &quot;141b@2020stats&quot;, host = &quot;alan.ucdavis.edu&quot;
@@ -463,26 +463,38 @@ sakila_mysql %&gt;% dbListTables()</code></pre>
 <div id="how-not-to-use-sql" class="section level2">
 <h2>How not to use SQL?</h2>
 <p><code>dplyr</code> provides an excellent interface for users without any SQL background to query databases.</p>
-<pre class="r"><code># number of rental transactions
-sakila_lite %&gt;%
-  tbl(&quot;rental&quot;) %&gt;%
-  count() %&gt;%
+<pre class="r"><code>film &lt;- sakila_lite %&gt;%
+  tbl(&quot;film&quot;)</code></pre>
+<pre class="r"><code># to download all observations
+film2 &lt;- film %&gt;% 
   collect()</code></pre>
-<pre><code>## # A tibble: 1 x 1
-##       n
-##   &lt;int&gt;
-## 1 16044</code></pre>
-<p><code>sakila_lite %&gt;% tbl(&quot;rental&quot;)</code> creates a virtual table rather loading the whole table into memory.</p>
-<pre class="r"><code>sakila_lite %&gt;%
-  tbl(&quot;rental&quot;) %&gt;%
-  class()</code></pre>
+<p><code>film</code> relies on the connection</p>
+<pre class="r"><code># dbDisconnect(sakila_lite)</code></pre>
+<p><code>sakila_lite %&gt;% tbl(&quot;film&quot;)</code> creates a virtual table rather loading the whole table into memory.</p>
+<pre class="r"><code>class(film)</code></pre>
 <pre><code>## [1] &quot;tbl_SQLiteConnection&quot; &quot;tbl_dbi&quot;              &quot;tbl_sql&quot;             
 ## [4] &quot;tbl_lazy&quot;             &quot;tbl&quot;</code></pre>
-<pre class="r"><code>sakila_lite %&gt;%
-  tbl(&quot;rental&quot;) %&gt;%
-  colnames()</code></pre>
-<pre><code>## [1] &quot;rental_id&quot;    &quot;rental_date&quot;  &quot;inventory_id&quot; &quot;customer_id&quot;  &quot;return_date&quot; 
-## [6] &quot;staff_id&quot;     &quot;last_update&quot;</code></pre>
+<pre class="r"><code>class(film2)</code></pre>
+<pre><code>## [1] &quot;tbl_df&quot;     &quot;tbl&quot;        &quot;data.frame&quot;</code></pre>
+<pre class="r"><code>film %&gt;%
+  filter(length &gt; 90) %&gt;%
+  collect()</code></pre>
+<pre><code>## # A tibble: 675 x 13
+##    film_id title description release_year language_id original_langua…
+##      &lt;int&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;              &lt;int&gt;            &lt;int&gt;
+##  1       4 AFFA… A Fanciful… 2006                   1               NA
+##  2       5 AFRI… A Fast-Pac… 2006                   1               NA
+##  3       6 AGEN… A Intrepid… 2006                   1               NA
+##  4       9 ALAB… A Thoughtf… 2006                   1               NA
+##  5      11 ALAM… A Boring E… 2006                   1               NA
+##  6      12 ALAS… A Fanciful… 2006                   1               NA
+##  7      13 ALI … A Action-P… 2006                   1               NA
+##  8      14 ALIC… A Emotiona… 2006                   1               NA
+##  9      16 ALLE… A Fast-Pac… 2006                   1               NA
+## 10      19 AMAD… A Emotiona… 2006                   1               NA
+## # … with 665 more rows, and 7 more variables: rental_duration &lt;int&gt;,
+## #   rental_rate &lt;dbl&gt;, length &lt;int&gt;, replacement_cost &lt;dbl&gt;, rating &lt;chr&gt;,
+## #   special_features &lt;chr&gt;, last_update &lt;chr&gt;</code></pre>
 </div>
 <div id="sakila-queries" class="section level2">
 <h2>Sakila queries</h2>
@@ -490,32 +502,30 @@ sakila_lite %&gt;%
 <ul>
 <li>Which actors have the first name Scarlett?</li>
 </ul>
-<pre class="r"><code>sakila_lite %&gt;%
+<pre class="r"><code>scarlett &lt;- sakila_lite %&gt;%
   tbl(&quot;actor&quot;) %&gt;%
   filter(str_to_lower(first_name) == str_to_lower(&quot;Scarlett&quot;)) %&gt;%
   collect()</code></pre>
-<pre><code>## # A tibble: 2 x 4
-##   actor_id first_name last_name last_update        
-##      &lt;int&gt; &lt;chr&gt;      &lt;chr&gt;     &lt;chr&gt;              
-## 1       81 SCARLETT   DAMON     2019-04-11 18:11:48
-## 2      124 SCARLETT   BENING    2019-04-11 18:11:48</code></pre>
 <p>Suppose we want to make the result a bit more beautiful.</p>
-<pre class="r"><code>sakila_lite %&gt;%
-  tbl(&quot;actor&quot;) %&gt;%
-  filter(str_to_lower(first_name) == str_to_lower(&quot;Scarlett&quot;)) %&gt;%
-  collect() %&gt;% 
-  mutate(first_name = str_to_title(first_name), last_name = str_to_title(last_name))</code></pre>
+<pre class="r"><code>scarlett %&gt;% 
+  mutate(
+    first_name = str_to_title(first_name), 
+    last_name = str_to_title(last_name))</code></pre>
 <pre><code>## # A tibble: 2 x 4
 ##   actor_id first_name last_name last_update        
 ##      &lt;int&gt; &lt;chr&gt;      &lt;chr&gt;     &lt;chr&gt;              
 ## 1       81 Scarlett   Damon     2019-04-11 18:11:48
 ## 2      124 Scarlett   Bening    2019-04-11 18:11:48</code></pre>
-<p>Note: SQLite doesn’t support transforming title case but Postgresql does.</p>
+<p>Note: mutation is done locally on my machine</p>
+<p>It is possible to do mutation on the remote server</p>
 <pre class="r"><code>sakila_psql %&gt;%
   tbl(&quot;actor&quot;) %&gt;%
   filter(str_to_lower(first_name) == str_to_lower(&quot;Scarlett&quot;)) %&gt;%
-  mutate(first_name = str_to_title(first_name), last_name = str_to_title(last_name)) %&gt;% 
+  mutate(
+    first_name = str_to_title(first_name), 
+    last_name = str_to_title(last_name)) %&gt;% 
   collect()</code></pre>
+<p>Note: SQLite doesn’t support transforming title case but Postgresql does.</p>
 <ul>
 <li>Which actors have the last name Johansson?</li>
 </ul>
@@ -534,7 +544,7 @@ sakila_lite %&gt;%
 </ul>
 <pre class="r"><code>sakila_lite %&gt;%
   tbl(&quot;actor&quot;) %&gt;%
-  summarize(n = n_distinct(last_name)) %&gt;%
+  summarize(n = n_distinct(last_name)) %&gt;% 
   collect()</code></pre>
 <pre><code>## # A tibble: 1 x 1
 ##       n
@@ -1187,7 +1197,7 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
   distinct(last_name)</code></pre>
 <pre><code>## # Source:   lazy query [?? x 1]
 ## # Database: sqlite 3.30.1
-## #   [/Users/Randy/Dropbox/Spring2020/sta141b/sta141b-notes/04-14-sql/sakila.sqlite]
+## #   [/Users/Randy/Dropbox/Spring2020/sta141b/sta141b-notes/ch02-sql/sakila.sqlite]
 ##    last_name
 ##    &lt;chr&gt;    
 ##  1 AKROYD   
@@ -1237,7 +1247,7 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
   head(2)</code></pre>
 <pre><code>## # Source:   lazy query [?? x 4]
 ## # Database: sqlite 3.30.1
-## #   [/Users/Randy/Dropbox/Spring2020/sta141b/sta141b-notes/04-14-sql/sakila.sqlite]
+## #   [/Users/Randy/Dropbox/Spring2020/sta141b/sta141b-notes/ch02-sql/sakila.sqlite]
 ##   actor_id first_name last_name last_update        
 ##      &lt;int&gt; &lt;chr&gt;      &lt;chr&gt;     &lt;chr&gt;              
 ## 1        1 PENELOPE   GUINESS   2019-04-11 18:11:48
@@ -1253,7 +1263,7 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
 <pre class="r"><code>sakila_lite %&gt;% tbl(&quot;film&quot;) %&gt;% distinct(rating)</code></pre>
 <pre><code>## # Source:   lazy query [?? x 1]
 ## # Database: sqlite 3.30.1
-## #   [/Users/Randy/Dropbox/Spring2020/sta141b/sta141b-notes/04-14-sql/sakila.sqlite]
+## #   [/Users/Randy/Dropbox/Spring2020/sta141b/sta141b-notes/ch02-sql/sakila.sqlite]
 ##   rating
 ##   &lt;chr&gt; 
 ## 1 PG    
@@ -1504,7 +1514,7 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
   filter(rating %in% c(&quot;PG&quot;, &quot;PG-13&quot;))</code></pre>
 <pre><code>## # Source:   lazy query [?? x 13]
 ## # Database: sqlite 3.30.1
-## #   [/Users/Randy/Dropbox/Spring2020/sta141b/sta141b-notes/04-14-sql/sakila.sqlite]
+## #   [/Users/Randy/Dropbox/Spring2020/sta141b/sta141b-notes/ch02-sql/sakila.sqlite]
 ##    film_id title description release_year language_id original_langua…
 ##      &lt;int&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;              &lt;int&gt;            &lt;int&gt;
 ##  1       1 ACAD… A Epic Dra… 2006                   1               NA

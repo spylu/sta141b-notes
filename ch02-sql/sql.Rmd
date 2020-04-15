@@ -24,11 +24,12 @@ A relational database is a type of database that stores and provides access to d
 
 There are many RDBMS
 - MySQL (owned by Oracle)
-- PostgreSQL (open source)
+- MariaDB (open source version MySQL)
+- PostgreSQL (open source, ANSI)
 - SQL Server (microsoft)
 - SQLite (open source, single file)
 
-What is SQL? Structured Query Language (or SQL) is a standard language for accessing and manipulating relational databaes.
+What is SQL? Structured Query Language (or SQL) is a standard language for accessing and manipulating relational databases.
 However, each RDMBS may have their own extension of the SQL language and their implmentation may vary too.
 
 
@@ -38,7 +39,7 @@ We are going to use a popular database called Sakila https://www.jooq.org/sakila
 
 The Sakila database is a nicely normalised schema modelling a DVD rental store, featuring things like films, actors, film-actor relationships, and a central inventory table that connects films, stores, and rentals.
 
-In the following, we are going to use both `sqlite` and `postgresql`.
+In the following, we are going to use `sqlite`, `postgresql` and `MySql`.
 
 
 ### SQLite
@@ -75,7 +76,7 @@ sakila_psql %>% dbListTables()
 
 ### MySQL
 
-MySQL is another popular RDBMS.
+MySQL (MariaDB)) is another popular RDBMS.
 
 
 ```{r, eval = FALSE}
@@ -92,25 +93,32 @@ sakila_mysql %>% dbListTables()
 `dplyr` provides an excellent interface for users without any SQL background to query databases.
 
 ```{r}
-# number of rental transactions
-sakila_lite %>%
-  tbl("rental") %>%
-  count() %>%
+film <- sakila_lite %>%
+  tbl("film")
+```
+
+```{r}
+# to download all observations
+film2 <- film %>% 
   collect()
 ```
 
-`sakila_lite %>% tbl("rental")` creates a virtual table rather loading the whole table into memory.
+`film` relies on the connection
+```{r}
+# dbDisconnect(sakila_lite)
+```
+
+`sakila_lite %>% tbl("film")` creates a virtual table rather loading the whole table into memory.
 
 ```{r}
-sakila_lite %>%
-  tbl("rental") %>%
-  class()
+class(film)
+class(film2)
 ```
 
 ```{r}
-sakila_lite %>%
-  tbl("rental") %>%
-  colnames()
+film %>%
+  filter(length > 90) %>%
+  collect()
 ```
 
 
@@ -120,8 +128,9 @@ https://datamastery.gitlab.io/exercises/sakila-queries.html
 
 - Which actors have the first name Scarlett?
 
+
 ```{r}
-sakila_lite %>%
+scarlett <- sakila_lite %>%
   tbl("actor") %>%
   filter(str_to_lower(first_name) == str_to_lower("Scarlett")) %>%
   collect()
@@ -130,22 +139,26 @@ sakila_lite %>%
 Suppose we want to make the result a bit more beautiful.
 
 ```{r}
-sakila_lite %>%
-  tbl("actor") %>%
-  filter(str_to_lower(first_name) == str_to_lower("Scarlett")) %>%
-  collect() %>% 
-  mutate(first_name = str_to_title(first_name), last_name = str_to_title(last_name))
+scarlett %>% 
+  mutate(
+    first_name = str_to_title(first_name), 
+    last_name = str_to_title(last_name))
 ```
+Note: mutation is done locally on my machine
 
-Note: SQLite doesn't support transforming title case but Postgresql does.
+It is possible to do mutation on the remote server
 
 ```{r, eval = FALSE}
 sakila_psql %>%
   tbl("actor") %>%
   filter(str_to_lower(first_name) == str_to_lower("Scarlett")) %>%
-  mutate(first_name = str_to_title(first_name), last_name = str_to_title(last_name)) %>% 
+  mutate(
+    first_name = str_to_title(first_name), 
+    last_name = str_to_title(last_name)) %>% 
   collect()
 ```
+
+Note: SQLite doesn't support transforming title case but Postgresql does.
 
 - Which actors have the last name Johansson?
 
@@ -161,11 +174,12 @@ sakila_lite %>%
 ```{r}
 sakila_lite %>%
   tbl("actor") %>%
-  summarize(n = n_distinct(last_name)) %>%
+  summarize(n = n_distinct(last_name)) %>% 
   collect()
 ```
 
 - Which last names are not repeated?
+
 
 ```{r}
 sakila_lite %>%
