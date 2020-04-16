@@ -390,6 +390,7 @@ summary {
 <li><a href="#sakila-queries">Sakila queries</a></li>
 <li><a href="#sql">SQL</a>
 <ul>
+<li><a href="#identifier-quotation">Identifier quotation</a></li>
 <li><a href="#select">SELECT</a></li>
 <li><a href="#order-by-clause">ORDER BY Clause</a></li>
 <li><a href="#distinct">DISTINCT</a></li>
@@ -426,7 +427,7 @@ library(DBI)</code></pre>
 <p>The database is called <code>sakila.sqlite</code>. You could either git clone from lectures repo or download using the code</p>
 <pre class="r"><code>if (!file.exists(&quot;sakila.sqlite&quot;) || file.size(&quot;sakila.sqlite&quot;) == 0) {
   download.file(
-    &quot;https://github.com/ucdavis-sta141b-sq-2020/sta141b-notes/raw/master/04-14-sql/sakila.sqlite&quot;, 
+    &quot;https://github.com/ucdavis-sta141b-sq-2020/sta141b-notes/raw/master/ch02-sql/sakila.sqlite&quot;, 
     destfile = &quot;sakila.sqlite&quot;)
 }</code></pre>
 <p>The file format is <code>.sqlite</code> which is one of the very common relational database formats, espeically for simple problems.</p>
@@ -440,6 +441,8 @@ sakila_lite %&gt;% dbListTables()</code></pre>
 ## [16] &quot;rental&quot;                 &quot;sales_by_film_category&quot; &quot;sales_by_store&quot;        
 ## [19] &quot;sqlite_sequence&quot;        &quot;staff&quot;                  &quot;staff_list&quot;            
 ## [22] &quot;store&quot;</code></pre>
+<pre class="r"><code>sakila_lite %&gt;% dbListFields(&quot;actor&quot;)  # column names</code></pre>
+<pre><code>## [1] &quot;actor_id&quot;    &quot;first_name&quot;  &quot;last_name&quot;   &quot;last_update&quot;</code></pre>
 </div>
 <div id="postgresql" class="section level3">
 <h3>Postgresql</h3>
@@ -708,7 +711,7 @@ uz %&gt;%
 <p>Why learning SQL when there is dplyr?</p>
 <ul>
 <li>SQL is everywhere (used in python, php, etc..)</li>
-<li>dplyr magics only read, desnot write</li>
+<li>dplyr magics only read, donot write</li>
 <li>Job interviews</li>
 </ul>
 <p>In R, a sql query can be made by using <code>dbGetQuery</code></p>
@@ -717,40 +720,194 @@ uz %&gt;%
 <pre><code>##       n
 ## 1 16044</code></pre>
 <p>We could also make SQL query by sql block. In here, we are using the connection <code>sakila_lite</code>. The result will be printed directly.</p>
-<pre class="sql"><code>SELECT COUNT(*) AS `n` FROM `rental`;</code></pre>
+<pre class="sql"><code>SELECT * FROM `rental`;</code></pre>
 <div class="knitsql-table">
 <table>
-<caption>1 records</caption>
+<caption>Displaying records 1 - 10</caption>
 <thead>
 <tr class="header">
-<th align="left">n</th>
+<th align="left">rental_id</th>
+<th align="left">rental_date</th>
+<th align="right">inventory_id</th>
+<th align="right">customer_id</th>
+<th align="left">return_date</th>
+<th align="right">staff_id</th>
+<th align="left">last_update</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">16044</td>
+<td align="left">1</td>
+<td align="left">2005-05-24 22:53:30.000</td>
+<td align="right">367</td>
+<td align="right">130</td>
+<td align="left">2005-05-26 22:04:30.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="even">
+<td align="left">2</td>
+<td align="left">2005-05-24 22:54:33.000</td>
+<td align="right">1525</td>
+<td align="right">459</td>
+<td align="left">2005-05-28 19:40:33.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="odd">
+<td align="left">3</td>
+<td align="left">2005-05-24 23:03:39.000</td>
+<td align="right">1711</td>
+<td align="right">408</td>
+<td align="left">2005-06-01 22:12:39.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="even">
+<td align="left">4</td>
+<td align="left">2005-05-24 23:04:41.000</td>
+<td align="right">2452</td>
+<td align="right">333</td>
+<td align="left">2005-06-03 01:43:41.000</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="odd">
+<td align="left">5</td>
+<td align="left">2005-05-24 23:05:21.000</td>
+<td align="right">2079</td>
+<td align="right">222</td>
+<td align="left">2005-06-02 04:33:21.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="even">
+<td align="left">6</td>
+<td align="left">2005-05-24 23:08:07.000</td>
+<td align="right">2792</td>
+<td align="right">549</td>
+<td align="left">2005-05-27 01:32:07.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="odd">
+<td align="left">7</td>
+<td align="left">2005-05-24 23:11:53.000</td>
+<td align="right">3995</td>
+<td align="right">269</td>
+<td align="left">2005-05-29 20:34:53.000</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="even">
+<td align="left">8</td>
+<td align="left">2005-05-24 23:31:46.000</td>
+<td align="right">2346</td>
+<td align="right">239</td>
+<td align="left">2005-05-27 23:33:46.000</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="odd">
+<td align="left">9</td>
+<td align="left">2005-05-25 00:00:40.000</td>
+<td align="right">2580</td>
+<td align="right">126</td>
+<td align="left">2005-05-28 00:22:40.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="even">
+<td align="left">10</td>
+<td align="left">2005-05-25 00:02:21.000</td>
+<td align="right">1824</td>
+<td align="right">399</td>
+<td align="left">2005-05-31 22:44:21.000</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:49</td>
 </tr>
 </tbody>
 </table>
 </div>
 <p>In we need the output, set <code>output.var</code> to <code>rental_count</code></p>
-<pre class="sql"><code>SELECT COUNT(*) AS `n` FROM `rental`;</code></pre>
+<pre class="sql"><code>SELECT * FROM `rental`;</code></pre>
 <p>The output could be later used in R blocks</p>
-<pre class="r"><code>rental_count</code></pre>
-<pre><code>##       n
-## 1 16044</code></pre>
+<pre class="r"><code>rental</code></pre>
+<pre><code>##    rental_id             rental_date inventory_id customer_id
+## 1          1 2005-05-24 22:53:30.000          367         130
+## 2          2 2005-05-24 22:54:33.000         1525         459
+## 3          3 2005-05-24 23:03:39.000         1711         408
+## 4          4 2005-05-24 23:04:41.000         2452         333
+## 5          5 2005-05-24 23:05:21.000         2079         222
+## 6          6 2005-05-24 23:08:07.000         2792         549
+## 7          7 2005-05-24 23:11:53.000         3995         269
+## 8          8 2005-05-24 23:31:46.000         2346         239
+## 9          9 2005-05-25 00:00:40.000         2580         126
+## 10        10 2005-05-25 00:02:21.000         1824         399
+## 11        11 2005-05-25 00:09:02.000         4443         142
+## 12        12 2005-05-25 00:19:27.000         1584         261
+## 13        13 2005-05-25 00:22:55.000         2294         334
+## 14        14 2005-05-25 00:31:15.000         2701         446
+## 15        15 2005-05-25 00:39:22.000         3049         319
+## 16        16 2005-05-25 00:43:11.000          389         316
+## 17        17 2005-05-25 01:06:36.000          830         575
+## 18        18 2005-05-25 01:10:47.000         3376          19
+## 19        19 2005-05-25 01:17:24.000         1941         456
+## 20        20 2005-05-25 01:48:41.000         3517         185
+## 21        21 2005-05-25 01:59:46.000          146         388
+## 22        22 2005-05-25 02:19:23.000          727         509
+## 23        23 2005-05-25 02:40:21.000         4441         438
+## 24        24 2005-05-25 02:53:02.000         3273         350
+## 25        25 2005-05-25 03:21:20.000         3961          37
+## 26        26 2005-05-25 03:36:50.000         4371         371
+## 27        27 2005-05-25 03:41:50.000         1225         301
+## 28        28 2005-05-25 03:42:37.000         4068         232
+##                return_date staff_id         last_update
+## 1  2005-05-26 22:04:30.000        1 2019-04-11 18:11:49
+## 2  2005-05-28 19:40:33.000        1 2019-04-11 18:11:49
+## 3  2005-06-01 22:12:39.000        1 2019-04-11 18:11:49
+## 4  2005-06-03 01:43:41.000        2 2019-04-11 18:11:49
+## 5  2005-06-02 04:33:21.000        1 2019-04-11 18:11:49
+## 6  2005-05-27 01:32:07.000        1 2019-04-11 18:11:49
+## 7  2005-05-29 20:34:53.000        2 2019-04-11 18:11:49
+## 8  2005-05-27 23:33:46.000        2 2019-04-11 18:11:49
+## 9  2005-05-28 00:22:40.000        1 2019-04-11 18:11:49
+## 10 2005-05-31 22:44:21.000        2 2019-04-11 18:11:49
+## 11 2005-06-02 20:56:02.000        2 2019-04-11 18:11:49
+## 12 2005-05-30 05:44:27.000        2 2019-04-11 18:11:49
+## 13 2005-05-30 04:28:55.000        1 2019-04-11 18:11:49
+## 14 2005-05-26 02:56:15.000        1 2019-04-11 18:11:49
+## 15 2005-06-03 03:30:22.000        1 2019-04-11 18:11:49
+## 16 2005-05-26 04:42:11.000        2 2019-04-11 18:11:49
+## 17 2005-05-27 00:43:36.000        1 2019-04-11 18:11:49
+## 18 2005-05-31 06:35:47.000        2 2019-04-11 18:11:49
+## 19 2005-05-31 06:00:24.000        1 2019-04-11 18:11:49
+## 20 2005-05-27 02:20:41.000        2 2019-04-11 18:11:49
+## 21 2005-05-26 01:01:46.000        2 2019-04-11 18:11:49
+## 22 2005-05-26 04:52:23.000        2 2019-04-11 18:11:49
+## 23 2005-05-29 06:34:21.000        1 2019-04-11 18:11:49
+## 24 2005-05-27 01:15:02.000        1 2019-04-11 18:11:49
+## 25 2005-05-27 21:25:20.000        2 2019-04-11 18:11:49
+## 26 2005-05-31 00:34:50.000        1 2019-04-11 18:11:49
+## 27 2005-05-30 01:13:50.000        2 2019-04-11 18:11:49
+## 28 2005-05-26 09:26:37.000        2 2019-04-11 18:11:49
+##  [ reached &#39;max&#39; / getOption(&quot;max.print&quot;) -- omitted 16016 rows ]</code></pre>
 <p>For comparsion, in Python, we use</p>
 <pre class="python"><code>import sqlite3
-sakila_lite = sqlite3.connect(&#39;sakila.sqlite&#39;)
+sakila = sqlite3.connect(&#39;sakila.sqlite&#39;)
 c = sakila.cursor()
-c.execute(&quot;SELECT COUNT(*) AS `n` FROM `rental`&quot;)
+c.execute(&quot;SELECT * FROM `rental`&quot;)
 c.fetchall()</code></pre>
-<p>SQLite supports both double quotes (which is the standard) and backticks to quote identifiers. Backticks are used in another popular database MySQL. Double quotes are used in Postgresql. It is always a good practice to quote the identifers.</p>
-<pre class="sql"><code>SELECT COUNT(*) AS `n` from `actor`;</code></pre>
-<pre class="sql"><code>-- The standard way
+<div id="identifier-quotation" class="section level3">
+<h3>Identifier quotation</h3>
+<p>SQLite supports both double quotes (which is the standard) and backticks to quote identifiers (table and column names). Backticks are used in another popular database MySQL. Double quotes are used in Postgresql. It is always a good practice to quote the identifers.</p>
+<pre class="sql"><code>-- MySQL
+SELECT COUNT(*) AS `n` from `actor`;</code></pre>
+<pre class="sql"><code>-- PostgresQL (ANSI standstad)
 SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
-<p>SQLite supports both style.</p>
+<p>SQLite supports both styles.</p>
 <pre class="sql"><code>SELECT COUNT(*) AS `n` from `actor`;</code></pre>
+</div>
 <div id="select" class="section level3">
 <h3>SELECT</h3>
 <p>The SELECT statement is pretty much the <code>select()</code> function in <code>dplyr</code>.</p>
@@ -859,6 +1016,13 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
 ##  9 bailey     
 ## 10 bailey     
 ## # … with 190 more rows</code></pre>
+<pre class="r"><code>sakila_lite %&gt;%
+  tbl(&quot;actor&quot;) %&gt;%
+  transmute(family_name = str_to_lower(last_name)) %&gt;%
+  show_query()</code></pre>
+<pre><code>## &lt;SQL&gt;
+## SELECT LOWER(`last_name`) AS `family_name`
+## FROM `actor`</code></pre>
 <pre class="sql"><code>SELECT * FROM &quot;actor&quot;;</code></pre>
 <div class="knitsql-table">
 <table>
@@ -993,153 +1157,351 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
 <div id="order-by-clause" class="section level3">
 <h3>ORDER BY Clause</h3>
 <p>It is equivalent to <code>arrange()</code> in <code>dplyr</code></p>
-<pre class="sql"><code>SELECT * FROM &quot;actor&quot; ORDER BY &quot;last_name&quot;;</code></pre>
+<pre class="sql"><code>SELECT * FROM &quot;film&quot; ORDER BY &quot;title&quot;;</code></pre>
 <div class="knitsql-table">
 <table>
 <caption>Displaying records 1 - 10</caption>
 <thead>
 <tr class="header">
-<th align="right">actor_id</th>
-<th align="left">first_name</th>
-<th align="left">last_name</th>
+<th align="left">film_id</th>
+<th align="center">title</th>
+<th align="left">description</th>
+<th align="left">release_year</th>
+<th align="right">language_id</th>
+<th align="right">original_language_id</th>
+<th align="right">rental_duration</th>
+<th align="right">rental_rate</th>
+<th align="right">length</th>
+<th align="right">replacement_cost</th>
+<th align="left">rating</th>
+<th align="left">special_features</th>
 <th align="left">last_update</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">58</td>
-<td align="left">CHRISTIAN</td>
-<td align="left">AKROYD</td>
+<td align="left">1</td>
+<td align="center">ACADEMY DINOSAUR</td>
+<td align="left">A Epic Drama of a Feminist And a Mad Scientist who must Battle a Teacher in The Canadian Rockies</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">6</td>
+<td align="right">0.99</td>
+<td align="right">86</td>
+<td align="right">20.99</td>
+<td align="left">PG</td>
+<td align="left">Deleted Scenes,Behind the Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="even">
-<td align="right">92</td>
-<td align="left">KIRSTEN</td>
-<td align="left">AKROYD</td>
+<td align="left">2</td>
+<td align="center">ACE GOLDFINGER</td>
+<td align="left">A Astounding Epistle of a Database Administrator And a Explorer who must Find a Car in Ancient China</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">3</td>
+<td align="right">4.99</td>
+<td align="right">48</td>
+<td align="right">12.99</td>
+<td align="left">G</td>
+<td align="left">Trailers,Deleted Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="odd">
-<td align="right">182</td>
-<td align="left">DEBBIE</td>
-<td align="left">AKROYD</td>
+<td align="left">3</td>
+<td align="center">ADAPTATION HOLES</td>
+<td align="left">A Astounding Reflection of a Lumberjack And a Car who must Sink a Lumberjack in A Baloon Factory</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">7</td>
+<td align="right">2.99</td>
+<td align="right">50</td>
+<td align="right">18.99</td>
+<td align="left">NC-17</td>
+<td align="left">Trailers,Deleted Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="even">
-<td align="right">118</td>
-<td align="left">CUBA</td>
-<td align="left">ALLEN</td>
+<td align="left">4</td>
+<td align="center">AFFAIR PREJUDICE</td>
+<td align="left">A Fanciful Documentary of a Frisbee And a Lumberjack who must Chase a Monkey in A Shark Tank</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">5</td>
+<td align="right">2.99</td>
+<td align="right">117</td>
+<td align="right">26.99</td>
+<td align="left">G</td>
+<td align="left">Commentaries,Behind the Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="odd">
-<td align="right">145</td>
-<td align="left">KIM</td>
-<td align="left">ALLEN</td>
+<td align="left">5</td>
+<td align="center">AFRICAN EGG</td>
+<td align="left">A Fast-Paced Documentary of a Pastry Chef And a Dentist who must Pursue a Forensic Psychologist in The Gulf of Mexico</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">6</td>
+<td align="right">2.99</td>
+<td align="right">130</td>
+<td align="right">22.99</td>
+<td align="left">G</td>
+<td align="left">Deleted Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="even">
-<td align="right">194</td>
-<td align="left">MERYL</td>
-<td align="left">ALLEN</td>
+<td align="left">6</td>
+<td align="center">AGENT TRUMAN</td>
+<td align="left">A Intrepid Panorama of a Robot And a Boy who must Escape a Sumo Wrestler in Ancient China</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">3</td>
+<td align="right">2.99</td>
+<td align="right">169</td>
+<td align="right">17.99</td>
+<td align="left">PG</td>
+<td align="left">Deleted Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="odd">
-<td align="right">76</td>
-<td align="left">ANGELINA</td>
-<td align="left">ASTAIRE</td>
+<td align="left">7</td>
+<td align="center">AIRPLANE SIERRA</td>
+<td align="left">A Touching Saga of a Hunter And a Butler who must Discover a Butler in A Jet Boat</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">6</td>
+<td align="right">4.99</td>
+<td align="right">62</td>
+<td align="right">28.99</td>
+<td align="left">PG-13</td>
+<td align="left">Trailers,Deleted Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="even">
-<td align="right">112</td>
-<td align="left">RUSSELL</td>
-<td align="left">BACALL</td>
+<td align="left">8</td>
+<td align="center">AIRPORT POLLOCK</td>
+<td align="left">A Epic Tale of a Moose And a Girl who must Confront a Monkey in Ancient India</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">6</td>
+<td align="right">4.99</td>
+<td align="right">54</td>
+<td align="right">15.99</td>
+<td align="left">R</td>
+<td align="left">Trailers</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="odd">
-<td align="right">67</td>
-<td align="left">JESSICA</td>
-<td align="left">BAILEY</td>
+<td align="left">9</td>
+<td align="center">ALABAMA DEVIL</td>
+<td align="left">A Thoughtful Panorama of a Database Administrator And a Mad Scientist who must Outgun a Mad Scientist in A Jet Boat</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">3</td>
+<td align="right">2.99</td>
+<td align="right">114</td>
+<td align="right">21.99</td>
+<td align="left">PG-13</td>
+<td align="left">Trailers,Deleted Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="even">
-<td align="right">190</td>
-<td align="left">AUDREY</td>
-<td align="left">BAILEY</td>
+<td align="left">10</td>
+<td align="center">ALADDIN CALENDAR</td>
+<td align="left">A Action-Packed Tale of a Man And a Lumberjack who must Reach a Feminist in Ancient China</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">6</td>
+<td align="right">4.99</td>
+<td align="right">63</td>
+<td align="right">24.99</td>
+<td align="left">NC-17</td>
+<td align="left">Trailers,Deleted Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 </tbody>
 </table>
 </div>
-<pre class="sql"><code>SELECT * FROM &quot;actor&quot; ORDER BY &quot;last_name&quot; DESC;</code></pre>
+<pre class="sql"><code>SELECT * FROM &quot;film&quot; ORDER BY &quot;title&quot; DESC;</code></pre>
 <div class="knitsql-table">
 <table>
 <caption>Displaying records 1 - 10</caption>
 <thead>
 <tr class="header">
-<th align="right">actor_id</th>
-<th align="left">first_name</th>
-<th align="left">last_name</th>
+<th align="right">film_id</th>
+<th align="center">title</th>
+<th align="left">description</th>
+<th align="left">release_year</th>
+<th align="right">language_id</th>
+<th align="right">original_language_id</th>
+<th align="right">rental_duration</th>
+<th align="right">rental_rate</th>
+<th align="right">length</th>
+<th align="right">replacement_cost</th>
+<th align="left">rating</th>
+<th align="left">special_features</th>
 <th align="left">last_update</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">186</td>
-<td align="left">JULIA</td>
-<td align="left">ZELLWEGER</td>
+<td align="right">1000</td>
+<td align="center">ZORRO ARK</td>
+<td align="left">A Intrepid Panorama of a Mad Scientist And a Boy who must Redeem a Boy in A Monastery</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">3</td>
+<td align="right">4.99</td>
+<td align="right">50</td>
+<td align="right">18.99</td>
+<td align="left">NC-17</td>
+<td align="left">Trailers,Commentaries,Behind the Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="even">
-<td align="right">111</td>
-<td align="left">CAMERON</td>
-<td align="left">ZELLWEGER</td>
+<td align="right">999</td>
+<td align="center">ZOOLANDER FICTION</td>
+<td align="left">A Fateful Reflection of a Waitress And a Boat who must Discover a Sumo Wrestler in Ancient China</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">5</td>
+<td align="right">2.99</td>
+<td align="right">101</td>
+<td align="right">28.99</td>
+<td align="left">R</td>
+<td align="left">Trailers,Deleted Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="odd">
-<td align="right">85</td>
-<td align="left">MINNIE</td>
-<td align="left">ZELLWEGER</td>
+<td align="right">998</td>
+<td align="center">ZHIVAGO CORE</td>
+<td align="left">A Fateful Yarn of a Composer And a Man who must Face a Boy in The Canadian Rockies</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">6</td>
+<td align="right">0.99</td>
+<td align="right">105</td>
+<td align="right">10.99</td>
+<td align="left">NC-17</td>
+<td align="left">Deleted Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="even">
-<td align="right">63</td>
-<td align="left">CAMERON</td>
-<td align="left">WRAY</td>
+<td align="right">997</td>
+<td align="center">YOUTH KICK</td>
+<td align="left">A Touching Drama of a Teacher And a Cat who must Challenge a Technical Writer in A U-Boat</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">4</td>
+<td align="right">0.99</td>
+<td align="right">179</td>
+<td align="right">14.99</td>
+<td align="left">NC-17</td>
+<td align="left">Trailers,Behind the Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="odd">
-<td align="right">156</td>
-<td align="left">FAY</td>
-<td align="left">WOOD</td>
+<td align="right">996</td>
+<td align="center">YOUNG LANGUAGE</td>
+<td align="left">A Unbelieveable Yarn of a Boat And a Database Administrator who must Meet a Boy in The First Manned Space Station</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">6</td>
+<td align="right">0.99</td>
+<td align="right">183</td>
+<td align="right">9.99</td>
+<td align="left">G</td>
+<td align="left">Trailers,Behind the Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="even">
-<td align="right">13</td>
-<td align="left">UMA</td>
-<td align="left">WOOD</td>
+<td align="right">995</td>
+<td align="center">YENTL IDAHO</td>
+<td align="left">A Amazing Display of a Robot And a Astronaut who must Fight a Womanizer in Berlin</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">5</td>
+<td align="right">4.99</td>
+<td align="right">86</td>
+<td align="right">11.99</td>
+<td align="left">R</td>
+<td align="left">Trailers,Commentaries,Deleted Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="odd">
-<td align="right">144</td>
-<td align="left">ANGELA</td>
-<td align="left">WITHERSPOON</td>
+<td align="right">994</td>
+<td align="center">WYOMING STORM</td>
+<td align="left">A Awe-Inspiring Panorama of a Robot And a Boat who must Overcome a Feminist in A U-Boat</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">6</td>
+<td align="right">4.99</td>
+<td align="right">100</td>
+<td align="right">29.99</td>
+<td align="left">PG-13</td>
+<td align="left">Deleted Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="even">
-<td align="right">147</td>
-<td align="left">FAY</td>
-<td align="left">WINSLET</td>
+<td align="right">993</td>
+<td align="center">WRONG BEHAVIOR</td>
+<td align="left">A Emotional Saga of a Crocodile And a Sumo Wrestler who must Discover a Mad Cow in New Orleans</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">6</td>
+<td align="right">2.99</td>
+<td align="right">178</td>
+<td align="right">10.99</td>
+<td align="left">PG-13</td>
+<td align="left">Trailers,Behind the Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="odd">
-<td align="right">68</td>
-<td align="left">RIP</td>
-<td align="left">WINSLET</td>
+<td align="right">992</td>
+<td align="center">WRATH MILE</td>
+<td align="left">A Intrepid Reflection of a Technical Writer And a Hunter who must Defeat a Sumo Wrestler in A Monastery</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">5</td>
+<td align="right">0.99</td>
+<td align="right">176</td>
+<td align="right">17.99</td>
+<td align="left">NC-17</td>
+<td align="left">Trailers,Commentaries</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 <tr class="even">
-<td align="right">168</td>
-<td align="left">WILL</td>
-<td align="left">WILSON</td>
+<td align="right">991</td>
+<td align="center">WORST BANGER</td>
+<td align="left">A Thrilling Drama of a Madman And a Dentist who must Conquer a Boy in The Outback</td>
+<td align="left">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">4</td>
+<td align="right">2.99</td>
+<td align="right">185</td>
+<td align="right">26.99</td>
+<td align="left">PG</td>
+<td align="left">Deleted Scenes,Behind the Scenes</td>
 <td align="left">2019-04-11 18:11:48</td>
 </tr>
 </tbody>
