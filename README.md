@@ -31,7 +31,7 @@
 | ------------------- | ----------------------------- | -------------------------------------------------------------------------------------- |
 | 03-31               | Introduction                  | [introduction](README.md)                                                              |
 | 04-02, 04-07, 04-09 | [dplyr](ch01-dplyr/dplyr.Rmd) | [dplyr](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch01-dplyr/dplyr.html) |
-| 04-14               | [sql](ch02-sql/sql.Rmd)       | [sql](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch02-sql/sql.html)       |
+| 04-14, 04-16        | [sql](ch02-sql/sql.Rmd)       | [sql](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch02-sql/sql.html)       |
 
 ## Links
 
