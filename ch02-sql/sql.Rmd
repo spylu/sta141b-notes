@@ -11,8 +11,6 @@ library(DBI)
 
 ```{r, echo = FALSE}
 # to suppress the object not found error when kniting
-sakila_psql <- NULL
-sakila_mysql <- NULL
 mydb <- NULL
 ```
 
@@ -66,7 +64,7 @@ sakila_lite %>% dbListFields("actor")  # column names
 
 I have also uploaded the Sakila database to a postgres server owned by the department. (You'll need to either on the campus or over UCD vpn to connect to it)
 
-```{r, eval = FALSE}
+```{r}
 sakila_psql <- dbConnect(RPostgres::Postgres(),
   dbname = "sakila",
   user = "psqluser", password = "secret", host = "alan.ucdavis.edu"
@@ -80,7 +78,7 @@ sakila_psql %>% dbListTables()
 MySQL (MariaDB)) is another popular RDBMS.
 
 
-```{r, eval = FALSE}
+```{r}
 sakila_mysql <- dbConnect(RMariaDB::MariaDB(),
   dbname = "DATA",
   user = "student", password = "141b@2020stats", host = "alan.ucdavis.edu"
@@ -149,7 +147,7 @@ Note: mutation is done locally on my machine
 
 It is possible to do mutation on the remote server
 
-```{r, eval = FALSE}
+```{r}
 sakila_psql %>%
   tbl("actor") %>%
   filter(str_to_lower(first_name) == str_to_lower("Scarlett")) %>%
@@ -314,18 +312,18 @@ c.fetchall()
 SQLite supports both double quotes (which is the standard) and backticks to quote identifiers (table and column names). Backticks are used in another popular database MySQL. Double quotes are used in Postgresql. It is always a good practice to quote the identifers.
 
 
-```{sql connection = sakila_mysql, eval = FALSE}
+```{sql connection = sakila_mysql}
 -- MySQL
 SELECT COUNT(*) AS `n` from `actor`;
 ```
 
-```{sql connection = sakila_psql, eval = FALSE}
+```{sql connection = sakila_psql}
 -- PostgresQL (ANSI standstad)
 SELECT COUNT(*) AS "n" from "actor";
 ```
 
 SQLite supports both styles.
-```{sql connection = sakila_lite, eval = FALSE}
+```{sql connection = sakila_lite}
 SELECT COUNT(*) AS `n` from `actor`;
 ```
 
@@ -388,11 +386,14 @@ DISTINCT operator to remove duplicates from a result set. It is equivalent to `d
 SELECT DISTINCT "last_name" FROM "actor";
 ```
 
+
 ```{r}
 sakila_lite %>%
   tbl("actor") %>%
-  distinct(last_name)
+  distinct(last_name) %>% 
+  collect()
 ```
+
 
 ### LIMIT
 
@@ -403,33 +404,34 @@ SELECT * FROM "actor" LIMIT 2;
 ```{r}
 sakila_lite %>%
   tbl("actor") %>%
-  head(2)
+  head(2) %>% 
+  collect()
 ```
+
 
 ### WHERE
 
 It is equivalent to `filter()` in `dplyr`.
 
-- SQLite (and MySQL) allows double qoutes to quote string values but it is actually not the SQL standard.
-In SQL standard, strings are quoted in single quotes.
-
-- In SQL standard, we should use `=` for comparison, but not `==`.
-
-```{r}
-sakila_lite %>% tbl("film") %>% distinct(rating)
-```
-
-
-
 ```{sql connection = sakila_lite}
+SELECT * FROM "film" WHERE "rating" = "PG" AND "length" = 90;
+```
+```{sql connection = sakila_psql}
 SELECT * FROM "film" WHERE "rating" = 'PG' AND "length" = 90;
 ```
+```{sql connection = sakila_mysql}
+SELECT * FROM `film` WHERE `rating` = "PG" AND `length` = 90;
+```
+Remarks:
+
+- For strings, SQLite (and MySQL) allows double qoutes to quote string values but it is actually not the SQL standard. In SQL standard, strings are quoted in single quotes.
+- In SQL standard, we should use `=` for comparison, but not `==`.
+- THere eixists other keywords such as `NOT` and `OR`.
 
 ```{r}
 sakila_lite %>%
   tbl("film") %>%
-  filter(rating == "PG" & length > 90) %>%
-  collect()
+  filter(rating == "PG", length == 90)
 ```
 
 - The `IN` operator
@@ -441,7 +443,8 @@ SELECT * FROM "film" WHERE "rating" IN ('PG', 'PG-13');
 ```{r}
 sakila_lite %>%
   tbl("film") %>%
-  filter(rating %in% c("PG", "PG-13"))
+  filter(rating %in% c("PG", "PG-13")) %>% 
+  collect()
 ```
 
 - The `LIKE` operator
@@ -455,14 +458,25 @@ SELECT "title" FROM "film" WHERE "title" LIKE '%victory%';
 Remark: in SQLite, the `LIKE` operator is case insensitive. However, it is not the case for other DBs.
 
 
-```{sql connection = sakila_psql, eval = FALSE}
+```{sql connection = sakila_psql}
 SELECT "title" FROM "film" WHERE "title" LIKE '%victory%';
 ```
 
 In Postgres, there is a `ILIKE` (case insensitive `LIKE`) operator
-```{sql connection = sakila_psql, eval = FALSE}
+```{sql connection = sakila_psql}
 SELECT "title" FROM "film" WHERE "title" ILIKE '%victory%';
 ```
+
+In MySQL (depends on the configuration),
+```{sql connection = sakila_mysql}
+SELECT `title` FROM `film` WHERE `title` LIKE '%victory%';
+```
+
+A slightly universal solution
+```{sql connection = sakila_psql}
+SELECT "title" FROM "film" WHERE LOWER("title") LIKE '%victory%';
+```
+
 
 - REGEX
 
@@ -483,9 +497,10 @@ SELECT
     WHEN "length" < 60 THEN 'short'
     WHEN "length" < 90 THEN 'mid'
     ELSE 'long'
-  END "len"
+  END "length"
 FROM "film";
 ```
+
 
 ### JOIN operations
 
@@ -493,10 +508,16 @@ FROM "film";
 - Inner Join - selects records that have matching values in both tables.
 
 ```{sql connection = sakila_lite}
-SELECT a."inventory_id", b."customer_id"
-  FROM "inventory" a
-  JOIN "rental" b ON a."inventory_id" = b."inventory_id"
-  ORDER BY a."inventory_id"
+SELECT *
+  FROM "inventory" a JOIN "rental" b
+  ON a."inventory_id" = b."inventory_id"
+```
+
+If we only want `store_id` and `customer_id`,
+```{sql connection = sakila_lite}
+SELECT a."store_id", b."customer_id"
+  FROM "inventory" a JOIN "rental" b
+  ON a."inventory_id" = b."inventory_id"
 ```
 
 ```{r}
@@ -504,60 +525,76 @@ inner_join(
   tbl(sakila_lite, "inventory"), 
   tbl(sakila_lite, "rental"), 
   by = "inventory_id") %>%
-  select(inventory_id, customer_id) %>% 
-  arrange(inventory_id) %>%
+  select(store_id, customer_id) %>% 
   collect()
 ```
 
 
 We could also join a more sophisticated subquery.
 
-- Find all the inventories where were rented and not retured.
+- Find all the inventories that were rented but not retured.
 
 
 ```{sql connection = sakila_lite}
-SELECT a."inventory_id", b."customer_id"
+SELECT a."store_id", a."inventory_id", b."customer_id"
   FROM "inventory" a 
   JOIN (
     SELECT * FROM "rental" WHERE "return_date" IS NULL
   ) b ON a."inventory_id" = b."inventory_id"
-  ORDER BY a."inventory_id"
 ```
 
 
 - Left Join - returns all records from the left table, and the matched records from the right table
 
 ```{sql connection = sakila_lite}
-SELECT a."inventory_id", b."customer_id"
+SELECT a."store_id", a."inventory_id", b."customer_id"
   FROM "inventory" a 
   LEFT JOIN (
     SELECT * FROM "rental" WHERE "return_date" IS NULL
   ) b ON a."inventory_id" = b."inventory_id"
-  ORDER BY a."inventory_id"
 ```
+
+- Right Join - opposite of Left Join
+
+```{sql connection = sakila_psql}
+SELECT a."store_id", a."inventory_id", b."customer_id"
+  FROM "inventory" a 
+  RIGHT JOIN (
+    SELECT * FROM "rental" WHERE "return_date" IS NULL
+  ) b ON a."inventory_id" = b."inventory_id"
+```
+
+Remark: SQLite doesn't support Right join
 
 - Full Join - returns all records when there is a match in left or right table records.
 
-SQLite doesn't support full join.
-
-```{sql connection = sakila_lite, eval = FALSE}
-SELECT a."inventory_id", b."customer_id"
+```{sql connection = sakila_psql}
+SELECT a."store_id", a."inventory_id", b."customer_id"
   FROM "inventory" a 
   FULL JOIN (
     SELECT * FROM "rental" WHERE "return_date" IS NULL
   ) b ON a."inventory_id" = b."inventory_id"
-  ORDER BY a."inventory_id"
 ```
+
+Remark: SQLite doesn't support full join.
 
 - Semi Join - return all records in the left table which has a match in the right table.
 
 ```{sql connection = sakila_lite}
 SELECT *
-  FROM "inventory" i
+  FROM "inventory" a
   WHERE EXISTS (
-    SELECT * FROM "rental" r
-      WHERE r."inventory_id" = i."inventory_id" AND "return_date" IS NULL
+    SELECT * FROM "rental" b
+      WHERE "return_date" IS NULL AND b."inventory_id" = a."inventory_id"
   )
+```
+
+```{r}
+tbl(sakila_lite, "inventory") %>% 
+  semi_join(
+    tbl(sakila_lite, "rental") %>% filter(is.na(return_date)),
+    by = "inventory_id") %>% 
+  collect()
 ```
 
 
@@ -565,13 +602,20 @@ SELECT *
 
 ```{sql connection = sakila_lite}
 SELECT *
-  FROM "inventory" i
+  FROM "inventory" a
   WHERE NOT EXISTS (
-    SELECT * FROM "rental" r
-      WHERE r."inventory_id" = i."inventory_id" AND "return_date" IS NULL
+    SELECT * FROM "rental" b
+      WHERE b."return_date" IS NULL AND a."inventory_id" = b."inventory_id"
   )
 ```
 
+```{r}
+tbl(sakila_lite, "inventory") %>% 
+  anti_join(
+    tbl(sakila_lite, "rental") %>% filter(is.na(return_date)),
+    by = "inventory_id") %>% 
+  collect()
+```
 
 ### Aggregate Functions
 
