@@ -732,7 +732,7 @@ drop_sql <- sqlInterpolate(mydb, "DROP TABLE ?tablename;", tablename = "table1")
 mydb %>% dbExecute(drop_sql)
 ```
 
-Remark: the use of sqlInterpolate is to avoid SQL injection attack
+Remark: the use of sqlInterpolate is to avoid SQL injection attack. Computerphile has a great video on this topic: https://www.youtube.com/watch?v=ciNHn38EyRc
 
 
 - create table
@@ -755,7 +755,7 @@ CREATE TABLE table2 (
 );
 ```
 
-There is also `dbWriteTable` which export the whole data frame as a table of the database.
+There is also `dbWriteTable` which exports the whole data frame as a table of the database.
 
 - INSERT – insert one or more rows into a table.
 

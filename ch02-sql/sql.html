@@ -3558,7 +3558,7 @@ mydb &lt;- dbConnect(RSQLite::SQLite(), dbname = &quot;mydb.sqlite&quot;)</code>
 </ul>
 <pre class="r"><code>drop_sql &lt;- sqlInterpolate(mydb, &quot;DROP TABLE ?tablename;&quot;, tablename = &quot;table1&quot;)
 mydb %&gt;% dbExecute(drop_sql)</code></pre>
-<p>Remark: the use of sqlInterpolate is to avoid SQL injection attack</p>
+<p>Remark: the use of sqlInterpolate is to avoid SQL injection attack. Computerphile has a great video on this topic: <a href="https://www.youtube.com/watch?v=ciNHn38EyRc" class="uri">https://www.youtube.com/watch?v=ciNHn38EyRc</a></p>
 <ul>
 <li>create table</li>
 </ul>
@@ -3574,7 +3574,7 @@ mydb %&gt;% dbReadTable(&quot;table1&quot;)</code></pre>
     age int,
     PRIMARY KEY (id)
 );</code></pre>
-<p>There is also <code>dbWriteTable</code> which export the whole data frame as a table of the database.</p>
+<p>There is also <code>dbWriteTable</code> which exports the whole data frame as a table of the database.</p>
 <ul>
 <li>INSERT – insert one or more rows into a table.</li>
 </ul>
