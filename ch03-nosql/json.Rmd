@@ -59,7 +59,7 @@ In JSON, values must be one of the following data types:
 ## Parsing JSON
 
 ```{r}
-txt <- "[12, 3, 7]"
+txt <- '[12, 3, 7]'
 x <- fromJSON(txt)
 x
 ```
@@ -73,9 +73,9 @@ x
 
 ```{r, eval = FALSE}
 # from file
-fromJSON("somefile.json")
+example <- fromJSON("example.json")
 # from the web
-fromJSON("https://www.example.com/hello.json")
+hello <- fromJSON("https://www.example.com/hello.json")
 ```
 
 
@@ -129,10 +129,13 @@ The data frame gets converted back into the original JSON structure by `toJSON` 
 
 ```{r}
 mydf$Ranking <- c(3, 1, 2, 4)
-toJSON(mydf, pretty = TRUE)
 ```
 
+```{r}
+ cat(toJSON(mydf, pretty = TRUE), file = "example2.json")
+```
 Hence you can go back and forth between dataframes and JSON, without any manual data restructuring.
+
 
 ### Matrices and Arrays
 

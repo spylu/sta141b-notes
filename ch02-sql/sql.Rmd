@@ -4,6 +4,7 @@ output:
   html_document: 
     toc: yes
 ---
+
 ```{r, message = FALSE}
 library(tidyverse)
 library(DBI)
@@ -255,6 +256,7 @@ uz %>%
   collect()
 ```
 
+
 ## SQL
 
 We just see some example queries of a relational database. Beind the scene, we are using a language called SQL. For example, in the last query, the SQL used is
@@ -281,6 +283,7 @@ sakila_lite %>%
   dbGetQuery("SELECT COUNT(*) AS `n` FROM `rental`")
 ```
 
+
 We could also make SQL query by sql block. In here, we are using the connection `sakila_lite`. The result will be printed directly.
 
 ```{sql connection = sakila_lite}
@@ -295,7 +298,7 @@ SELECT * FROM `rental`;
 
 The output could be later used in R blocks
 ```{r}
-rental
+as_tibble(rental)
 ```
 
 For comparsion, in Python, we use
@@ -355,7 +358,7 @@ sakila_lite %>%
 ```
 
 
-
+To select every column,
 ```{sql connection = sakila_lite}
 SELECT * FROM "actor";
 ```
@@ -369,12 +372,13 @@ SELECT "rental_id", "last_update" FROM "rental";
 
 It is equivalent to `arrange()` in `dplyr`
 
+
 ```{sql connection = sakila_lite}
-SELECT * FROM "film" ORDER BY "title";
+SELECT "film_id", "title" FROM "film" ORDER BY "title";
 ```
 
 ```{sql connection = sakila_lite}
-SELECT * FROM "film" ORDER BY "title" DESC;
+SELECT "film_id", "title" FROM "film" ORDER BY "title" DESC;
 ```
 
 
@@ -510,7 +514,7 @@ FROM "film";
 ```{sql connection = sakila_lite}
 SELECT *
   FROM "inventory" a JOIN "rental" b
-  ON a."inventory_id" = b."inventory_id"
+  ON a."inventory_id" = b."inventory_id";
 ```
 
 If we only want `store_id` and `customer_id`,
@@ -629,6 +633,13 @@ tbl(sakila_lite, "inventory") %>%
 SELECT AVG("length") as "avg_length" FROM "film"
 ```
 
+```{r}
+sakila_lite %>% 
+  tbl("film") %>% 
+  summarize(avg_length = mean(length)) %>% 
+  collect()
+```
+
 
 ### Group By
 
@@ -636,6 +647,15 @@ SELECT AVG("length") as "avg_length" FROM "film"
 SELECT "rating", AVG("length") AS "avg_length" 
   FROM "film" GROUP BY "rating";
 ```
+
+```{r}
+sakila_lite %>% 
+  tbl("film") %>% 
+  group_by(rating) %>% 
+  summarize(avg_length = mean(length)) %>% 
+  collect()
+```
+
 
 ```{sql connection = sakila_lite}
 SELECT "rating", "rental_duration", AVG("length") AS "avg_length" 
@@ -647,8 +667,8 @@ SELECT "rating", "rental_duration", AVG("length") AS "avg_length"
 
 We could use subquery to perform more complicated tasks.
 
-```{sql connection = sakila_lite}
-SELECT "rating", "avg_length"
+```{sql connection = sakila_psql}
+SELECT *
 FROM
   (
   SELECT "rating", AVG("length") AS "avg_length" 
@@ -658,6 +678,7 @@ WHERE "avg_length" > 115;
 ```
 
 The `WITH` clause allows us to refer to th temp table in WHERE statement.
+
 ```{sql connection = sakila_lite}
 WITH "Temp" AS(
     SELECT "rating", AVG("length") AS "avg_length" 
@@ -671,7 +692,7 @@ WITH "Temp" AS(
 However, not all database systems support `WITH` (most does). Then those situation, you need to repeart the query.
 
 ```{sql connection = sakila_lite}
-SELECT "rating"
+SELECT "rating", "avg_length" 
 FROM (
     SELECT "rating", AVG("length") AS "avg_length" 
       FROM "film" GROUP BY "rating"
@@ -684,6 +705,29 @@ WHERE "avg_length" = (
 )
 ```
 
+### OVER
+
+Calculate the sum of "amount" for each store.
+
+```{sql connection = sakila_psql}
+SELECT "store_id", SUM("amount") 
+ FROM "rental" r 
+  JOIN "payment" p 
+  on r."rental_id" = p."rental_id"
+  JOIN "inventory" i 
+  on r."inventory_id" = i."inventory_id"
+  GROUP BY "store_id"
+```
+
+```{sql connection = sakila_psql}
+SELECT "store_id", "amount", SUM("amount") OVER (PARTITION BY "store_id")
+FROM
+(SELECT * FROM "rental" r 
+  JOIN "payment" p 
+  on r."rental_id" = p."rental_id"
+  JOIN "inventory" i 
+  on r."inventory_id" = i."inventory_id") table2
+```
 
 ### SET Operators
 
@@ -696,6 +740,7 @@ SELECT * FROM "film" where "film_id" <= 3
 UNION
 SELECT * FROM "film" where "film_id" <= 4;
 ```
+
 `UNION ALL` doesn't remove duplications
 
 ```{sql connection = sakila_lite}
@@ -725,16 +770,6 @@ SELECT * FROM "film" where "film_id" >= 4;
 mydb <- dbConnect(RSQLite::SQLite(), dbname = "mydb.sqlite")
 ```
 
-- delete a table permanently.
-
-```{r, eval = FALSE}
-drop_sql <- sqlInterpolate(mydb, "DROP TABLE ?tablename;", tablename = "table1")
-mydb %>% dbExecute(drop_sql)
-```
-
-Remark: the use of sqlInterpolate is to avoid SQL injection attack. Computerphile has a great video on this topic: https://www.youtube.com/watch?v=ciNHn38EyRc
-
-
 - create table
   
 ```{r, eval = FALSE}
@@ -746,16 +781,37 @@ mydb %>% dbReadTable("table1")
 ```
 
 ```{sql, connection = mydb, eval = FALSE}
-CREATE TABLE table2 (
-    id int NOT NULL,
-    last_name varchar(255) NOT NULL,
-    first_name varchar(255),
-    age int,
-    PRIMARY KEY (id)
+CREATE TABLE "table2" (
+    "id" int NOT NULL,
+    "last_name" varchar(255) NOT NULL,
+    "first_name" varchar(255),
+    "age" int,
+    PRIMARY KEY ("id")
 );
 ```
 
 There is also `dbWriteTable` which exports the whole data frame as a table of the database.
+
+
+- delete a table permanently.
+
+```{sql connection = mydb, eval = FALSE}
+DROP TABLE "table2";
+```
+
+```{r, eval = FALSE}
+mydb %>% dbExecute('DROP TABLE "table2";')
+```
+
+```{r, eval = FALSE}
+drop_sql <- sqlInterpolate(mydb, "DROP TABLE ?tablename;", tablename = "table1")
+mydb %>% dbExecute(drop_sql)
+```
+
+Remark: the use of sqlInterpolate is to avoid SQL injection attack. Computerphile has a great video on this topic: https://www.youtube.com/watch?v=ciNHn38EyRc
+
+
+
 
 - INSERT – insert one or more rows into a table.
 
@@ -765,11 +821,10 @@ mydb %>% dbAppendTable(
   tibble(fruit = "apple", count = 2))
 
 # alternatively
-sql <- mydb %>% sqlAppendTable(
+insert_sql <- mydb %>% sqlAppendTable(
   "table1",
   tibble(fruit = "apple", count = 2), row.names = FALSE)
-mydb %>% dbExecute(sql)
-
+mydb %>% dbExecute(insert_sql)
 
 mydb %>% dbReadTable("table1")
 ```
@@ -778,6 +833,7 @@ mydb %>% dbReadTable("table1")
 INSERT INTO 'table2' (id, last_name, first_name, age)
   VALUES (1, "Lai", "Randy", 16);  
 ```
+
 ```{sql, connection = mydb, eval = FALSE}
 INSERT INTO 'table2' (id, last_name, first_name)
   VALUES (2, "Lai", "Natalie");
@@ -791,11 +847,11 @@ mydb %>% dbReadTable("table2")
 - UPDATE – update existing data in a table.
 
 ```{r, eval = FALSE}
-mydb %>% dbExecute("UPDATE table2 SET age = 33 WHERE id = 1;")
+mydb %>% dbExecute('UPDATE "table2" SET "age" = 33 WHERE "id" = 1;')
 ```
 
 ```{sql, connection = mydb, eval = FALSE}
-UPDATE table2 SET age = 33 WHERE id = 1;
+UPDATE "table2" SET "age" = 33 WHERE "id" = 1;
 ```
 
 ```{r, eval = FALSE}
@@ -805,11 +861,11 @@ mydb %>% dbReadTable("table2")
 - DELETE – delete data from a table permanently.
 
 ```{r, eval = FALSE}
-mydb %>% dbExecute("DELETE FROM table2 WHERE id = 1;")
+mydb %>% dbExecute('DELETE FROM "table2" WHERE "id" = 1;')
 ```
 
 ```{sql, connection = mydb, eval = FALSE}
-DELETE FROM table2 WHERE id = 1;
+DELETE FROM "table2" WHERE "id" = 1;
 ```
 
 ```{r, eval = FALSE}
