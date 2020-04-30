@@ -33,7 +33,8 @@
 | 04-02, 04-07, 04-09 | [dplyr](ch01-dplyr/dplyr.Rmd) | [dplyr](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch01-dplyr/dplyr.html) |
 | 04-14, 04-16, 04-21 | [sql](ch02-sql/sql.Rmd)       | [sql](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch02-sql/sql.html)       |
 | 04-23               | [json](ch03-nosql/json.Rmd)   | [json](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch03-nosql/json.html)   |
-| 04-27               | [nosql](ch03-nosql/nosql.Rmd) | [nosql](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch03-nosql/nosql.html) |
+| 04-28               | [nosql](ch03-nosql/nosql.Rmd) | [nosql](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch03-nosql/nosql.html) |
+| 04-30               | [nosql](ch04-shiny/shiny.Rmd) | [shiny](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch04-shiny/shiny.html) |
 
 ## Links
 
