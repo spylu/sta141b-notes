@@ -3,8 +3,6 @@ title: "NoSQL"
 output:
   html_document:
     df_print: paged
-  pdf_document: 
-    latex_engine: xelatex
 date: "02-27-2020"
 ---
 
@@ -23,7 +21,15 @@ Some references:
 - https://neo4j.com/developer/graph-db-vs-nosql/
 
 
+# Terminology
+
+Rational DBs vs Document Databases
+
+- table vs collection
+- row vs document
+
 # Airbnb sample data
+
 
 https://docs.atlas.mongodb.com/sample-data/sample-airbnb/
 
@@ -42,6 +48,7 @@ m <- mongo("airbnb", db = "data", url = "mongodb://mongouser:secret@alan.ucdavis
 m$count()
 ```
 
+
 ```{r}
 # total number of documents satisfying a condition
 m$count('{"price": {"$lt": 20}}')
@@ -54,9 +61,9 @@ https://docs.mongodb.com/manual/tutorial/query-documents/
 
 ```{r}
 # find the first document
-m$find("{}", limit = 1)
+first_doc <- m$find("{}", limit = 1)
+first_doc %>% glimpse()
 ```
-
 
 ```{r}
 # filter fileds
@@ -86,27 +93,49 @@ m$find('{"bedrooms": {"$gte": 4}}',
 )
 ```
 
+
 ## Query nested fields
 
 ```{r}
-m$find('{"address.country_code": "US"}',
-  fields = '{"name": true, "address.country": 1}'
-) %>% mutate(country = address$country, address = NULL)
+countrydf <- m$find(
+  '{"address.country_code": "US"}',
+  fields = '{"name": true, "address.country": true}'
+)
+countrydf
 ```
+
+```{r}
+names(countrydf)
+```
+
+```{r}
+countrydf %>% pull(address) %>% pull(country)
+```
+
+```{r}
+countrydf %>%
+  mutate(country = address$country, address = NULL)
+```
+
+
 
 ## Query an array
 
 ```{r}
 # find all documents where amenities contain both Oven and Refrigerator
-m$find('{"amenities": {"$all": ["Oven", "Refrigerator"]}}', 
+m$find('{"amenities": {"$all": ["Oven", "Refrigerator"]}}',
        fields = '{"name": true, "amenities": true}')
 ```
 
+PS: you could also use the `$and` operator.
+
+
 ```{r}
 # find all documents where amenities contain Oven or Refrigerator or both
-m$find('{"amenities": {"$in": ["Oven", "Refrigerator"]}}', 
+m$find('{"amenities": {"$in": ["Oven", "Refrigerator"]}}',
        fields = '{"name": true, "amenities": true}')
 ```
+PS: you could also use the `$or` operator.
 
 
 ## Regular expressions
@@ -173,8 +202,8 @@ Group by two variables
 ```{r}
 m$aggregate('[
   {"$match": {"$and": [{"bedrooms": {"$ne": null}}, {"bedrooms": {"$ne": 0}}]}},
-  {"$group": { 
-    "_id": {"property_type": "$property_type", "bedrooms": "$bedrooms"}, 
+  {"$group": {
+    "_id": {"property_type": "$property_type", "bedrooms": "$bedrooms"},
     "price": { "$sum": "$price" }}},
   {"$project": {
     "_id": false,
@@ -196,8 +225,8 @@ m$aggregate('[
     "bedrooms": "$bedrooms",
     "price_per_room": {"$divide": ["$price", "$bedrooms"]}
   }},
-  {"$group": { 
-    "_id": "$property_type", 
+  {"$group": {
+    "_id": "$property_type",
     "ave_bedrooms": { "$avg": "$bedrooms" },
     "price_per_room": { "$avg": "$price_per_room" }}
   },
