@@ -3,8 +3,7 @@
 library(shiny)
 
 ui <- fluidPage(
-  actionButton(inputId = "clicks", 
-    label = "Click me")
+  actionButton("clicks", label = "Click me")
 )
 
 server <- function(input, output) {

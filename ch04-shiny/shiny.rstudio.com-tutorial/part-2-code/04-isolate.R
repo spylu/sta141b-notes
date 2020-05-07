@@ -3,10 +3,10 @@
 library(shiny)
 
 ui <- fluidPage(
-  sliderInput(inputId = "num", 
-    label = "Choose a number", 
+  sliderInput(inputId = "num",
+    label = "Choose a number",
     value = 25, min = 1, max = 100),
-  textInput(inputId = "title", 
+  textInput(inputId = "title",
     label = "Write a title",
     value = "Histogram of Random Normal Values"),
   plotOutput("hist")
@@ -14,7 +14,7 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   output$hist <- renderPlot({
-    hist(rnorm(input$num), main = isolate(input$title))
+    hist(rnorm(input$num), main = input$title)
   })
 }
 

@@ -3,19 +3,20 @@
 library(shiny)
 
 ui <- fluidPage(
-  sliderInput(inputId = "num", 
-    label = "Choose a number", 
+  sliderInput(inputId = "num",
+    label = "Choose a number",
     value = 25, min = 1, max = 100),
   plotOutput("hist"),
   verbatimTextOutput("stats")
 )
 
 server <- function(input, output) {
-  
+
   data <- reactive({
-    rnorm(input$num)
+    n <- input$num
+    rnorm(n)
   })
-  
+
   output$hist <- renderPlot({
     hist(data())
   })

@@ -1,5 +1,5 @@
 ---
-title: "Json"
+title: "Shiny Web Apps"
 output: 
   html_document: 
     toc: yes
@@ -24,6 +24,7 @@ There are multiple way to host a shiny app.
 - Upload your app to https://www.shinyapps.io/
   - Each month you have 25 free active hours
   - Maximum 5 apps for free
+- Google Cloud Run
 
 
 ## First Shiny App
@@ -31,8 +32,8 @@ There are multiple way to host a shiny app.
 There are couple ways to create an shiny app (we are going to focus on RStudio).
 
 - File -> New File -> Shiny Web App
-  - Single file
-  - Multiple file (essentially the same as single file)
+  - Single file (recommanded)
+  - Multiple files (essentially the same as single file, but two files)
 - File -> New File -> R Markdown -> Shiny
 - File -> New File -> R Markdown -> From Template -> Flex Dashboard (if `flexdashboard` was installed.)
 
@@ -80,7 +81,7 @@ We are going to use the tutorial in https://github.com/rstudio-education/shiny.r
 | plotOutput                    | renderPlot      |
 | tableOutput                   | renderTable     |
 | dataTableOutput               | renderDataTable |
-| textOutput/verbatimTextOutput | renderText      |
+| textOutput/verbatimTextOutput | renderText/renderPrint      |
 
 
 ## Reactivity
