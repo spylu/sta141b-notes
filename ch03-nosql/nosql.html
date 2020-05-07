@@ -1868,8 +1868,8 @@ m$find(&#39;{&quot;amenities&quot;: {&quot;$in&quot;: [&quot;Oven&quot;, &quot;R
 </div>
 <p>PS: you could also use the <code>$or</code> operator.</p>
 </div>
-<div id="regular-expressions" class="section level2">
-<h2>Regular expressions</h2>
+<div id="regular-expressions-come-back-to-this-later" class="section level2">
+<h2>Regular expressions (come back to this later)</h2>
 <pre class="r"><code>m$find(&#39;{&quot;name&quot;: {&quot;$regex&quot;: &quot;\\\\bsea\\\\b&quot;, &quot;$options&quot;: &quot;i&quot;}}&#39;, fields = &#39;{&quot;name&quot;: true}&#39;)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
@@ -1889,6 +1889,9 @@ while (TRUE) {
 ## Cómoda Habitación L&#39;Eixample, Gracia 
 ## Private room with sunny terrace of 200m2. 6 
 ## Near the RAMBLA, the double room at  SEASIDE PORT1</code></pre>
+<p>Examine raw JSON</p>
+<pre class="r"><code>it &lt;- m$iterate(&#39;{&quot;price&quot;: {&quot;$lt&quot;: 12}}&#39;)</code></pre>
+<pre class="r"><code>it$json()</code></pre>
 </div>
 <div id="aggregate" class="section level2">
 <h2>Aggregate</h2>
@@ -1900,8 +1903,19 @@ while (TRUE) {
 <li>arrange data</li>
 </ul>
 <pre class="r"><code>m$aggregate(&#39;[
-  {&quot;$match&quot;: {&quot;$and&quot;: [{&quot;bedrooms&quot;: {&quot;$ne&quot;: null}}, {&quot;bedrooms&quot;: {&quot;$ne&quot;: 0}}]}},
-  {&quot;$group&quot;: { &quot;_id&quot;: &quot;$bedrooms&quot;, &quot;price&quot;: { &quot;$avg&quot;: &quot;$price&quot; }}},
+  {
+    &quot;$match&quot;: {
+      &quot;$and&quot;: [
+        {&quot;bedrooms&quot;: {&quot;$ne&quot;: null}}, 
+        {&quot;bedrooms&quot;: {&quot;$ne&quot;: 0}}
+      ]
+    }
+  },
+  {
+    &quot;$group&quot;: { 
+      &quot;_id&quot;: &quot;$bedrooms&quot;, 
+      &quot;price&quot;: { &quot;$avg&quot;: &quot;$price&quot; }}
+  },
   {&quot;$sort&quot;: { &quot;_id&quot;: 1}}
 ]&#39;)</code></pre>
 <div data-pagedtable="false">
@@ -1909,6 +1923,7 @@ while (TRUE) {
 {"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["_id"],"name":[1],"type":["int"],"align":["right"]},{"label":["price"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"208.7122","_rn_":"1"},{"1":"2","2":"315.5752","_rn_":"2"},{"1":"3","2":"470.3396","_rn_":"3"},{"1":"4","2":"646.0994","_rn_":"4"},{"1":"5","2":"1120.8333","_rn_":"5"},{"1":"6","2":"873.7500","_rn_":"6"},{"1":"7","2":"1799.1429","_rn_":"7"},{"1":"8","2":"1224.3333","_rn_":"8"},{"1":"9","2":"3047.5000","_rn_":"9"},{"1":"10","2":"1201.5000","_rn_":"10"},{"1":"15","2":"127.0000","_rn_":"11"},{"1":"20","2":"227.0000","_rn_":"12"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
+<p>Another way to specify the same query</p>
 <pre class="r"><code>m$aggregate(&#39;[
   {&quot;$match&quot;: {&quot;bedrooms&quot;: {&quot;$ne&quot;: null, &quot;$ne&quot;: 0}}},
   {&quot;$group&quot;: { &quot;_id&quot;: &quot;$bedrooms&quot;, &quot;price&quot;: { &quot;$avg&quot;: &quot;$price&quot; }}},
@@ -1921,7 +1936,7 @@ while (TRUE) {
 </div>
 <p>User the <code>$project</code> stage to rename <code>_id</code>.</p>
 <pre class="r"><code>m$aggregate(&#39;[
-  {&quot;$match&quot;: {&quot;$and&quot;: [{&quot;bedrooms&quot;: {&quot;$ne&quot;: null}}, {&quot;bedrooms&quot;: {&quot;$ne&quot;: 0}}]}},
+  {&quot;$match&quot;: {&quot;bedrooms&quot;: {&quot;$ne&quot;: null, &quot;$ne&quot;: 0}}},
   {&quot;$group&quot;: { &quot;_id&quot;: &quot;$bedrooms&quot;, &quot;price&quot;: { &quot;$avg&quot;: &quot;$price&quot; }}},
   {&quot;$project&quot;: {
     &quot;_id&quot;: false,
@@ -1937,7 +1952,7 @@ while (TRUE) {
 </div>
 <p>Group by two variables</p>
 <pre class="r"><code>m$aggregate(&#39;[
-  {&quot;$match&quot;: {&quot;$and&quot;: [{&quot;bedrooms&quot;: {&quot;$ne&quot;: null}}, {&quot;bedrooms&quot;: {&quot;$ne&quot;: 0}}]}},
+  {&quot;$match&quot;: {&quot;bedrooms&quot;: {&quot;$ne&quot;: null, &quot;$ne&quot;: 0}}},
   {&quot;$group&quot;: {
     &quot;_id&quot;: {&quot;property_type&quot;: &quot;$property_type&quot;, &quot;bedrooms&quot;: &quot;$bedrooms&quot;},
     &quot;price&quot;: { &quot;$sum&quot;: &quot;$price&quot; }}},
@@ -1956,7 +1971,7 @@ while (TRUE) {
 </div>
 <p>Compute the average price per room grouped by property_type</p>
 <pre class="r"><code>m$aggregate(&#39;[
-  {&quot;$match&quot;: {&quot;$and&quot;: [{&quot;bedrooms&quot;: {&quot;$ne&quot;: null}}, {&quot;bedrooms&quot;: {&quot;$ne&quot;: 0}}]}},
+  {&quot;$match&quot;: {&quot;bedrooms&quot;: {&quot;$ne&quot;: null, &quot;$ne&quot;: 0}}},
   {&quot;$project&quot;: {
     &quot;property_type&quot;: &quot;$property_type&quot;,
     &quot;bedrooms&quot;: &quot;$bedrooms&quot;,
@@ -1972,11 +1987,12 @@ while (TRUE) {
     &quot;property_type&quot;: &quot;$_id&quot;,
     &quot;ave_bedrooms&quot;: true,
     &quot;price_per_room&quot;: true
-  }}
+  }},
+  {&quot;$sort&quot;: {&quot;property_type&quot;: 1}}
 ]&#39;)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["ave_bedrooms"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["price_per_room"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["property_type"],"name":[3],"type":["chr"],"align":["left"]}],"data":[{"1":"1.000000","2":"109.00000","3":"Train","_rn_":"1"},{"1":"1.000000","2":"2999.00000","3":"Heritage hotel (India)","_rn_":"2"},{"1":"1.000000","2":"68.00000","3":"Hut","_rn_":"3"},{"1":"2.000000","2":"67.50000","3":"Barn","_rn_":"4"},{"1":"1.640000","2":"770.73867","3":"Hotel","_rn_":"5"},{"1":"1.200000","2":"182.70000","3":"Tiny house","_rn_":"6"},{"1":"1.253731","2":"147.93532","3":"Guest suite","_rn_":"7"},{"1":"1.317460","2":"324.59074","3":"Bed and breakfast","_rn_":"8"},{"1":"5.000000","2":"599.80000","3":"Houseboat","_rn_":"9"},{"1":"2.250000","2":"415.15278","3":"Farm stay","_rn_":"10"},{"1":"2.294118","2":"86.00000","3":"Cottage","_rn_":"11"},{"1":"1.000000","2":"249.32258","3":"Hostel","_rn_":"12"},{"1":"1.000000","2":"129.00000","3":"Nature lodge","_rn_":"13"},{"1":"1.170732","2":"140.42683","3":"Guesthouse","_rn_":"14"},{"1":"1.531250","2":"325.88958","3":"Serviced apartment","_rn_":"15"},{"1":"2.105802","2":"144.53142","3":"House","_rn_":"16"},{"1":"1.466245","2":"185.11139","3":"Apartment","_rn_":"17"},{"1":"1.524496","2":"243.24702","3":"Condominium","_rn_":"18"},{"1":"1.838095","2":"98.72063","3":"Townhouse","_rn_":"19"},{"1":"1.000000","2":"67.00000","3":"Earth house","_rn_":"20"},{"1":"1.000000","2":"25.00000","3":"Campsite","_rn_":"21"},{"1":"2.375000","2":"162.23772","3":"Villa","_rn_":"22"},{"1":"1.000000","2":"127.00000","3":"Castle","_rn_":"23"},{"1":"1.000000","2":"117.50000","3":"Boat","_rn_":"24"},{"1":"1.800000","2":"201.05000","3":"Resort","_rn_":"25"},{"1":"1.083333","2":"69.54167","3":"Cabin","_rn_":"26"},{"1":"1.125000","2":"314.50000","3":"Casa particular (Cuba)","_rn_":"27"},{"1":"1.314815","2":"159.61276","3":"Loft","_rn_":"28"},{"1":"1.363636","2":"193.90000","3":"Aparthotel","_rn_":"29"},{"1":"1.000000","2":"321.50000","3":"Chalet","_rn_":"30"},{"1":"1.500000","2":"277.22604","3":"Boutique hotel","_rn_":"31"},{"1":"1.000000","2":"185.00000","3":"Treehouse","_rn_":"32"},{"1":"1.666667","2":"89.31944","3":"Bungalow","_rn_":"33"},{"1":"1.357143","2":"179.55357","3":"Other","_rn_":"34"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["ave_bedrooms"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["price_per_room"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["property_type"],"name":[3],"type":["chr"],"align":["left"]}],"data":[{"1":"1.363636","2":"193.90000","3":"Aparthotel","_rn_":"1"},{"1":"1.466245","2":"185.11139","3":"Apartment","_rn_":"2"},{"1":"2.000000","2":"67.50000","3":"Barn","_rn_":"3"},{"1":"1.317460","2":"324.59074","3":"Bed and breakfast","_rn_":"4"},{"1":"1.000000","2":"117.50000","3":"Boat","_rn_":"5"},{"1":"1.500000","2":"277.22604","3":"Boutique hotel","_rn_":"6"},{"1":"1.666667","2":"89.31944","3":"Bungalow","_rn_":"7"},{"1":"1.083333","2":"69.54167","3":"Cabin","_rn_":"8"},{"1":"1.000000","2":"25.00000","3":"Campsite","_rn_":"9"},{"1":"1.125000","2":"314.50000","3":"Casa particular (Cuba)","_rn_":"10"},{"1":"1.000000","2":"127.00000","3":"Castle","_rn_":"11"},{"1":"1.000000","2":"321.50000","3":"Chalet","_rn_":"12"},{"1":"1.524496","2":"243.24702","3":"Condominium","_rn_":"13"},{"1":"2.294118","2":"86.00000","3":"Cottage","_rn_":"14"},{"1":"1.000000","2":"67.00000","3":"Earth house","_rn_":"15"},{"1":"2.250000","2":"415.15278","3":"Farm stay","_rn_":"16"},{"1":"1.253731","2":"147.93532","3":"Guest suite","_rn_":"17"},{"1":"1.170732","2":"140.42683","3":"Guesthouse","_rn_":"18"},{"1":"1.000000","2":"2999.00000","3":"Heritage hotel (India)","_rn_":"19"},{"1":"1.000000","2":"249.32258","3":"Hostel","_rn_":"20"},{"1":"1.640000","2":"770.73867","3":"Hotel","_rn_":"21"},{"1":"2.105802","2":"144.53142","3":"House","_rn_":"22"},{"1":"5.000000","2":"599.80000","3":"Houseboat","_rn_":"23"},{"1":"1.000000","2":"68.00000","3":"Hut","_rn_":"24"},{"1":"1.314815","2":"159.61276","3":"Loft","_rn_":"25"},{"1":"1.000000","2":"129.00000","3":"Nature lodge","_rn_":"26"},{"1":"1.357143","2":"179.55357","3":"Other","_rn_":"27"},{"1":"1.800000","2":"201.05000","3":"Resort","_rn_":"28"},{"1":"1.531250","2":"325.88958","3":"Serviced apartment","_rn_":"29"},{"1":"1.200000","2":"182.70000","3":"Tiny house","_rn_":"30"},{"1":"1.838095","2":"98.72063","3":"Townhouse","_rn_":"31"},{"1":"1.000000","2":"109.00000","3":"Train","_rn_":"32"},{"1":"1.000000","2":"185.00000","3":"Treehouse","_rn_":"33"},{"1":"2.375000","2":"162.23772","3":"Villa","_rn_":"34"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>

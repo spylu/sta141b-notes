@@ -138,7 +138,7 @@ m$find('{"amenities": {"$in": ["Oven", "Refrigerator"]}}',
 PS: you could also use the `$or` operator.
 
 
-## Regular expressions
+## Regular expressions (come back to this later)
 
 ```{r}
 m$find('{"name": {"$regex": "\\\\bsea\\\\b", "$options": "i"}}', fields = '{"name": true}')
@@ -155,6 +155,16 @@ while (TRUE) {
 }
 ```
 
+Examine raw JSON
+```{r}
+it <- m$iterate('{"price": {"$lt": 12}}')
+```
+
+```{r, eval = FALSE}
+it$json()
+```
+
+
 
 ## Aggregate
 
@@ -166,15 +176,46 @@ In the following code, there are three stages
 - group by and summerize
 - arrange data
 
+```{json eval = FALSE, include = FALSE}
+[
+  {
+    "$match": {
+      "$and": [
+        {"bedrooms": {"$ne": null}}, 
+        {"bedrooms": {"$ne": 0}}
+      ]
+    }
+  },
+  {
+    "$group": { 
+      "_id": "$bedrooms", 
+      "price": { "$avg": "$price" }}
+  },
+  {"$sort": { "_id": 1}}
+]
+```
+
+
 ```{r}
 m$aggregate('[
-  {"$match": {"$and": [{"bedrooms": {"$ne": null}}, {"bedrooms": {"$ne": 0}}]}},
-  {"$group": { "_id": "$bedrooms", "price": { "$avg": "$price" }}},
+  {
+    "$match": {
+      "$and": [
+        {"bedrooms": {"$ne": null}}, 
+        {"bedrooms": {"$ne": 0}}
+      ]
+    }
+  },
+  {
+    "$group": { 
+      "_id": "$bedrooms", 
+      "price": { "$avg": "$price" }}
+  },
   {"$sort": { "_id": 1}}
 ]')
 ```
 
-
+Another way to specify the same query
 ```{r}
 m$aggregate('[
   {"$match": {"bedrooms": {"$ne": null, "$ne": 0}}},
@@ -184,10 +225,24 @@ m$aggregate('[
 ```
 
 
+```{json, eval = FALSE, include = FALSE}
+[
+  {"$match": {"bedrooms": {"$ne": null, "$ne": 0}}},
+  {"$group": { "_id": "$bedrooms", "price": { "$avg": "$price" }}},
+  {"$project": {
+    "_id": false,
+    "bedrooms": "$_id",
+    "price": true
+  }},
+  {"$sort": {"bedrooms": 1}}
+]
+```
+
+
 User the `$project` stage to rename `_id`.
 ```{r}
 m$aggregate('[
-  {"$match": {"$and": [{"bedrooms": {"$ne": null}}, {"bedrooms": {"$ne": 0}}]}},
+  {"$match": {"bedrooms": {"$ne": null, "$ne": 0}}},
   {"$group": { "_id": "$bedrooms", "price": { "$avg": "$price" }}},
   {"$project": {
     "_id": false,
@@ -201,7 +256,7 @@ m$aggregate('[
 Group by two variables
 ```{r}
 m$aggregate('[
-  {"$match": {"$and": [{"bedrooms": {"$ne": null}}, {"bedrooms": {"$ne": 0}}]}},
+  {"$match": {"bedrooms": {"$ne": null, "$ne": 0}}},
   {"$group": {
     "_id": {"property_type": "$property_type", "bedrooms": "$bedrooms"},
     "price": { "$sum": "$price" }}},
@@ -219,7 +274,7 @@ Compute the average price per room grouped by property_type
 
 ```{r}
 m$aggregate('[
-  {"$match": {"$and": [{"bedrooms": {"$ne": null}}, {"bedrooms": {"$ne": 0}}]}},
+  {"$match": {"bedrooms": {"$ne": null, "$ne": 0}}},
   {"$project": {
     "property_type": "$property_type",
     "bedrooms": "$bedrooms",
@@ -235,7 +290,8 @@ m$aggregate('[
     "property_type": "$_id",
     "ave_bedrooms": true,
     "price_per_room": true
-  }}
+  }},
+  {"$sort": {"property_type": 1}}
 ]')
 ```
 
