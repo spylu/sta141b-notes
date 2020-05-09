@@ -285,7 +285,7 @@ air_time <- flights %>%
   mean(na.rm = TRUE)
 flights %>%
   select(origin, air_time) %>%
-  filter(origin == "JFK", air_time > {{ air_time }})
+  filter(origin == "JFK", air_time > !!air_time)
 ```
 
 Remarks: use `slice` if you want particular rows

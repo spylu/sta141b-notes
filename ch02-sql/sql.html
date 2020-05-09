@@ -390,6 +390,7 @@ summary {
 <li><a href="#sakila-queries">Sakila queries</a></li>
 <li><a href="#sql">SQL</a>
 <ul>
+<li><a href="#identifier-quotation">Identifier quotation</a></li>
 <li><a href="#select">SELECT</a></li>
 <li><a href="#order-by-clause">ORDER BY Clause</a></li>
 <li><a href="#distinct">DISTINCT</a></li>
@@ -400,6 +401,7 @@ summary {
 <li><a href="#aggregate-functions">Aggregate Functions</a></li>
 <li><a href="#group-by">Group By</a></li>
 <li><a href="#subquery-and-with">Subquery and WITH</a></li>
+<li><a href="#over">OVER</a></li>
 <li><a href="#set-operators">SET Operators</a></li>
 <li><a href="#table-manipulation">Table Manipulation</a></li>
 </ul></li>
@@ -414,19 +416,19 @@ library(DBI)</code></pre>
 <p>a structured set of data held in a computer, especially one that is accessible in various ways.</p>
 </blockquote>
 <p>A relational database is a type of database that stores and provides access to data points that are related to one another. Relation databases are administrated by a Relational Database Management System (RDBMS). The data in RDBMS is stored in database objects called tables. A table is a collection of related data entries and it consists of columns and rows.</p>
-<p>There are many RDBMS - MySQL (owned by Oracle) - PostgreSQL (open source) - SQL Server (microsoft) - SQLite (open source, single file)</p>
-<p>What is SQL? Structured Query Language (or SQL) is a standard language for accessing and manipulating relational databaes. However, each RDMBS may have their own extension of the SQL language and their implmentation may vary too.</p>
+<p>There are many RDBMS - MySQL (owned by Oracle) - MariaDB (open source version MySQL) - PostgreSQL (open source, ANSI) - SQL Server (microsoft) - SQLite (open source, single file)</p>
+<p>What is SQL? Structured Query Language (or SQL) is a standard language for accessing and manipulating relational databases. However, each RDMBS may have their own extension of the SQL language and their implmentation may vary too.</p>
 <div id="connect-to-a-databse" class="section level2">
 <h2>Connect to a databse</h2>
 <p>We are going to use a popular database called Sakila <a href="https://www.jooq.org/sakila" class="uri">https://www.jooq.org/sakila</a>.</p>
 <p>The Sakila database is a nicely normalised schema modelling a DVD rental store, featuring things like films, actors, film-actor relationships, and a central inventory table that connects films, stores, and rentals.</p>
-<p>In the following, we are going to use both <code>sqlite</code> and <code>postgresql</code>.</p>
+<p>In the following, we are going to use <code>sqlite</code>, <code>postgresql</code> and <code>MySql</code>.</p>
 <div id="sqlite" class="section level3">
 <h3>SQLite</h3>
 <p>The database is called <code>sakila.sqlite</code>. You could either git clone from lectures repo or download using the code</p>
 <pre class="r"><code>if (!file.exists(&quot;sakila.sqlite&quot;) || file.size(&quot;sakila.sqlite&quot;) == 0) {
   download.file(
-    &quot;https://github.com/ucdavis-sta141b-sq-2020/sta141b-notes/raw/master/04-14-sql/sakila.sqlite&quot;, 
+    &quot;https://github.com/ucdavis-sta141b-sq-2020/sta141b-notes/raw/master/ch02-sql/sakila.sqlite&quot;, 
     destfile = &quot;sakila.sqlite&quot;)
 }</code></pre>
 <p>The file format is <code>.sqlite</code> which is one of the very common relational database formats, espeically for simple problems.</p>
@@ -440,6 +442,8 @@ sakila_lite %&gt;% dbListTables()</code></pre>
 ## [16] &quot;rental&quot;                 &quot;sales_by_film_category&quot; &quot;sales_by_store&quot;        
 ## [19] &quot;sqlite_sequence&quot;        &quot;staff&quot;                  &quot;staff_list&quot;            
 ## [22] &quot;store&quot;</code></pre>
+<pre class="r"><code>sakila_lite %&gt;% dbListFields(&quot;actor&quot;)  # column names</code></pre>
+<pre><code>## [1] &quot;actor_id&quot;    &quot;first_name&quot;  &quot;last_name&quot;   &quot;last_update&quot;</code></pre>
 </div>
 <div id="postgresql" class="section level3">
 <h3>Postgresql</h3>
@@ -449,40 +453,77 @@ sakila_lite %&gt;% dbListTables()</code></pre>
   user = &quot;psqluser&quot;, password = &quot;secret&quot;, host = &quot;alan.ucdavis.edu&quot;
 )
 sakila_psql %&gt;% dbListTables()</code></pre>
+<pre><code>##  [1] &quot;inventory&quot;                  &quot;staff&quot;                     
+##  [3] &quot;payment_p2017_05&quot;           &quot;payment_p2017_06&quot;          
+##  [5] &quot;payment&quot;                    &quot;actor&quot;                     
+##  [7] &quot;store&quot;                      &quot;payment_p2017_02&quot;          
+##  [9] &quot;rental&quot;                     &quot;language&quot;                  
+## [11] &quot;payment_p2017_03&quot;           &quot;address&quot;                   
+## [13] &quot;payment_p2017_01&quot;           &quot;film&quot;                      
+## [15] &quot;country&quot;                    &quot;city&quot;                      
+## [17] &quot;payment_p2017_04&quot;           &quot;film_actor&quot;                
+## [19] &quot;category&quot;                   &quot;film_category&quot;             
+## [21] &quot;customer&quot;                   &quot;actor_info&quot;                
+## [23] &quot;customer_list&quot;              &quot;film_list&quot;                 
+## [25] &quot;nicer_but_slower_film_list&quot; &quot;sales_by_film_category&quot;    
+## [27] &quot;sales_by_store&quot;             &quot;staff_list&quot;</code></pre>
 </div>
 <div id="mysql" class="section level3">
 <h3>MySQL</h3>
-<p>MySQL is another popular RDBMS.</p>
+<p>MySQL (MariaDB)) is another popular RDBMS.</p>
 <pre class="r"><code>sakila_mysql &lt;- dbConnect(RMariaDB::MariaDB(),
   dbname = &quot;DATA&quot;,
   user = &quot;student&quot;, password = &quot;141b@2020stats&quot;, host = &quot;alan.ucdavis.edu&quot;
 )
 sakila_mysql %&gt;% dbListTables()</code></pre>
+<pre><code>##  [1] &quot;actor&quot;                      &quot;address&quot;                   
+##  [3] &quot;category&quot;                   &quot;city&quot;                      
+##  [5] &quot;country&quot;                    &quot;customer&quot;                  
+##  [7] &quot;customer_list&quot;              &quot;film&quot;                      
+##  [9] &quot;film_actor&quot;                 &quot;film_category&quot;             
+## [11] &quot;film_list&quot;                  &quot;film_text&quot;                 
+## [13] &quot;inventory&quot;                  &quot;language&quot;                  
+## [15] &quot;nicer_but_slower_film_list&quot; &quot;payment&quot;                   
+## [17] &quot;rental&quot;                     &quot;sales_by_film_category&quot;    
+## [19] &quot;sales_by_store&quot;             &quot;staff&quot;                     
+## [21] &quot;staff_list&quot;                 &quot;store&quot;</code></pre>
 </div>
 </div>
 <div id="how-not-to-use-sql" class="section level2">
 <h2>How not to use SQL?</h2>
 <p><code>dplyr</code> provides an excellent interface for users without any SQL background to query databases.</p>
-<pre class="r"><code># number of rental transactions
-sakila_lite %&gt;%
-  tbl(&quot;rental&quot;) %&gt;%
-  count() %&gt;%
+<pre class="r"><code>film &lt;- sakila_lite %&gt;%
+  tbl(&quot;film&quot;)</code></pre>
+<pre class="r"><code># to download all observations
+film2 &lt;- film %&gt;% 
   collect()</code></pre>
-<pre><code>## # A tibble: 1 x 1
-##       n
-##   &lt;int&gt;
-## 1 16044</code></pre>
-<p><code>sakila_lite %&gt;% tbl(&quot;rental&quot;)</code> creates a virtual table rather loading the whole table into memory.</p>
-<pre class="r"><code>sakila_lite %&gt;%
-  tbl(&quot;rental&quot;) %&gt;%
-  class()</code></pre>
+<p><code>film</code> relies on the connection</p>
+<pre class="r"><code># dbDisconnect(sakila_lite)</code></pre>
+<p><code>sakila_lite %&gt;% tbl(&quot;film&quot;)</code> creates a virtual table rather loading the whole table into memory.</p>
+<pre class="r"><code>class(film)</code></pre>
 <pre><code>## [1] &quot;tbl_SQLiteConnection&quot; &quot;tbl_dbi&quot;              &quot;tbl_sql&quot;             
 ## [4] &quot;tbl_lazy&quot;             &quot;tbl&quot;</code></pre>
-<pre class="r"><code>sakila_lite %&gt;%
-  tbl(&quot;rental&quot;) %&gt;%
-  colnames()</code></pre>
-<pre><code>## [1] &quot;rental_id&quot;    &quot;rental_date&quot;  &quot;inventory_id&quot; &quot;customer_id&quot;  &quot;return_date&quot; 
-## [6] &quot;staff_id&quot;     &quot;last_update&quot;</code></pre>
+<pre class="r"><code>class(film2)</code></pre>
+<pre><code>## [1] &quot;tbl_df&quot;     &quot;tbl&quot;        &quot;data.frame&quot;</code></pre>
+<pre class="r"><code>film %&gt;%
+  filter(length &gt; 90) %&gt;%
+  collect()</code></pre>
+<pre><code>## # A tibble: 675 x 13
+##    film_id title description release_year language_id original_langua…
+##      &lt;int&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;              &lt;int&gt;            &lt;int&gt;
+##  1       4 AFFA… A Fanciful… 2006                   1               NA
+##  2       5 AFRI… A Fast-Pac… 2006                   1               NA
+##  3       6 AGEN… A Intrepid… 2006                   1               NA
+##  4       9 ALAB… A Thoughtf… 2006                   1               NA
+##  5      11 ALAM… A Boring E… 2006                   1               NA
+##  6      12 ALAS… A Fanciful… 2006                   1               NA
+##  7      13 ALI … A Action-P… 2006                   1               NA
+##  8      14 ALIC… A Emotiona… 2006                   1               NA
+##  9      16 ALLE… A Fast-Pac… 2006                   1               NA
+## 10      19 AMAD… A Emotiona… 2006                   1               NA
+## # … with 665 more rows, and 7 more variables: rental_duration &lt;int&gt;,
+## #   rental_rate &lt;dbl&gt;, length &lt;int&gt;, replacement_cost &lt;dbl&gt;, rating &lt;chr&gt;,
+## #   special_features &lt;chr&gt;, last_update &lt;chr&gt;</code></pre>
 </div>
 <div id="sakila-queries" class="section level2">
 <h2>Sakila queries</h2>
@@ -490,32 +531,35 @@ sakila_lite %&gt;%
 <ul>
 <li>Which actors have the first name Scarlett?</li>
 </ul>
-<pre class="r"><code>sakila_lite %&gt;%
+<pre class="r"><code>scarlett &lt;- sakila_lite %&gt;%
   tbl(&quot;actor&quot;) %&gt;%
   filter(str_to_lower(first_name) == str_to_lower(&quot;Scarlett&quot;)) %&gt;%
   collect()</code></pre>
-<pre><code>## # A tibble: 2 x 4
-##   actor_id first_name last_name last_update        
-##      &lt;int&gt; &lt;chr&gt;      &lt;chr&gt;     &lt;chr&gt;              
-## 1       81 SCARLETT   DAMON     2019-04-11 18:11:48
-## 2      124 SCARLETT   BENING    2019-04-11 18:11:48</code></pre>
 <p>Suppose we want to make the result a bit more beautiful.</p>
-<pre class="r"><code>sakila_lite %&gt;%
-  tbl(&quot;actor&quot;) %&gt;%
-  filter(str_to_lower(first_name) == str_to_lower(&quot;Scarlett&quot;)) %&gt;%
-  collect() %&gt;% 
-  mutate(first_name = str_to_title(first_name), last_name = str_to_title(last_name))</code></pre>
+<pre class="r"><code>scarlett %&gt;% 
+  mutate(
+    first_name = str_to_title(first_name), 
+    last_name = str_to_title(last_name))</code></pre>
 <pre><code>## # A tibble: 2 x 4
 ##   actor_id first_name last_name last_update        
 ##      &lt;int&gt; &lt;chr&gt;      &lt;chr&gt;     &lt;chr&gt;              
 ## 1       81 Scarlett   Damon     2019-04-11 18:11:48
 ## 2      124 Scarlett   Bening    2019-04-11 18:11:48</code></pre>
-<p>Note: SQLite doesn’t support transforming title case but Postgresql does.</p>
+<p>Note: mutation is done locally on my machine</p>
+<p>It is possible to do mutation on the remote server</p>
 <pre class="r"><code>sakila_psql %&gt;%
   tbl(&quot;actor&quot;) %&gt;%
   filter(str_to_lower(first_name) == str_to_lower(&quot;Scarlett&quot;)) %&gt;%
-  mutate(first_name = str_to_title(first_name), last_name = str_to_title(last_name)) %&gt;% 
+  mutate(
+    first_name = str_to_title(first_name), 
+    last_name = str_to_title(last_name)) %&gt;% 
   collect()</code></pre>
+<pre><code>## # A tibble: 2 x 4
+##   actor_id first_name last_name last_update        
+##      &lt;int&gt; &lt;chr&gt;      &lt;chr&gt;     &lt;dttm&gt;             
+## 1       81 Scarlett   Damon     2017-02-15 09:34:33
+## 2      124 Scarlett   Bening    2017-02-15 09:34:33</code></pre>
+<p>Note: SQLite doesn’t support transforming title case but Postgresql does.</p>
 <ul>
 <li>Which actors have the last name Johansson?</li>
 </ul>
@@ -534,7 +578,7 @@ sakila_lite %&gt;%
 </ul>
 <pre class="r"><code>sakila_lite %&gt;%
   tbl(&quot;actor&quot;) %&gt;%
-  summarize(n = n_distinct(last_name)) %&gt;%
+  summarize(n = n_distinct(last_name)) %&gt;% 
   collect()</code></pre>
 <pre><code>## # A tibble: 1 x 1
 ##       n
@@ -548,6 +592,10 @@ sakila_lite %&gt;%
   count(last_name) %&gt;%
   filter(n == 1) %&gt;%
   collect()</code></pre>
+<pre><code>## Warning: The `add` argument of `group_by()` is deprecated as of dplyr 1.0.0.
+## Please use the `.add` argument instead.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_warnings()` to see where this warning was generated.</code></pre>
 <pre><code>## # A tibble: 66 x 2
 ##    last_name     n
 ##    &lt;chr&gt;     &lt;int&gt;
@@ -698,7 +746,7 @@ uz %&gt;%
 <p>Why learning SQL when there is dplyr?</p>
 <ul>
 <li>SQL is everywhere (used in python, php, etc..)</li>
-<li>dplyr magics only read, desnot write</li>
+<li>dplyr magics only read, donot write</li>
 <li>Job interviews</li>
 </ul>
 <p>In R, a sql query can be made by using <code>dbGetQuery</code></p>
@@ -707,40 +755,194 @@ uz %&gt;%
 <pre><code>##       n
 ## 1 16044</code></pre>
 <p>We could also make SQL query by sql block. In here, we are using the connection <code>sakila_lite</code>. The result will be printed directly.</p>
-<pre class="sql"><code>SELECT COUNT(*) AS `n` FROM `rental`;</code></pre>
+<pre class="sql"><code>SELECT * FROM `rental`;</code></pre>
 <div class="knitsql-table">
 <table>
-<caption>1 records</caption>
+<caption>Displaying records 1 - 10</caption>
 <thead>
 <tr class="header">
-<th align="left">n</th>
+<th align="left">rental_id</th>
+<th align="left">rental_date</th>
+<th align="right">inventory_id</th>
+<th align="right">customer_id</th>
+<th align="left">return_date</th>
+<th align="right">staff_id</th>
+<th align="left">last_update</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">16044</td>
+<td align="left">1</td>
+<td align="left">2005-05-24 22:53:30.000</td>
+<td align="right">367</td>
+<td align="right">130</td>
+<td align="left">2005-05-26 22:04:30.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="even">
+<td align="left">2</td>
+<td align="left">2005-05-24 22:54:33.000</td>
+<td align="right">1525</td>
+<td align="right">459</td>
+<td align="left">2005-05-28 19:40:33.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="odd">
+<td align="left">3</td>
+<td align="left">2005-05-24 23:03:39.000</td>
+<td align="right">1711</td>
+<td align="right">408</td>
+<td align="left">2005-06-01 22:12:39.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="even">
+<td align="left">4</td>
+<td align="left">2005-05-24 23:04:41.000</td>
+<td align="right">2452</td>
+<td align="right">333</td>
+<td align="left">2005-06-03 01:43:41.000</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="odd">
+<td align="left">5</td>
+<td align="left">2005-05-24 23:05:21.000</td>
+<td align="right">2079</td>
+<td align="right">222</td>
+<td align="left">2005-06-02 04:33:21.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="even">
+<td align="left">6</td>
+<td align="left">2005-05-24 23:08:07.000</td>
+<td align="right">2792</td>
+<td align="right">549</td>
+<td align="left">2005-05-27 01:32:07.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="odd">
+<td align="left">7</td>
+<td align="left">2005-05-24 23:11:53.000</td>
+<td align="right">3995</td>
+<td align="right">269</td>
+<td align="left">2005-05-29 20:34:53.000</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="even">
+<td align="left">8</td>
+<td align="left">2005-05-24 23:31:46.000</td>
+<td align="right">2346</td>
+<td align="right">239</td>
+<td align="left">2005-05-27 23:33:46.000</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="odd">
+<td align="left">9</td>
+<td align="left">2005-05-25 00:00:40.000</td>
+<td align="right">2580</td>
+<td align="right">126</td>
+<td align="left">2005-05-28 00:22:40.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="even">
+<td align="left">10</td>
+<td align="left">2005-05-25 00:02:21.000</td>
+<td align="right">1824</td>
+<td align="right">399</td>
+<td align="left">2005-05-31 22:44:21.000</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:49</td>
 </tr>
 </tbody>
 </table>
 </div>
 <p>In we need the output, set <code>output.var</code> to <code>rental_count</code></p>
-<pre class="sql"><code>SELECT COUNT(*) AS `n` FROM `rental`;</code></pre>
+<pre class="sql"><code>SELECT * FROM `rental`;</code></pre>
 <p>The output could be later used in R blocks</p>
-<pre class="r"><code>rental_count</code></pre>
-<pre><code>##       n
-## 1 16044</code></pre>
+<pre class="r"><code>as_tibble(rental)</code></pre>
+<pre><code>## # A tibble: 16,044 x 7
+##    rental_id rental_date inventory_id customer_id return_date staff_id
+##        &lt;int&gt; &lt;chr&gt;              &lt;int&gt;       &lt;int&gt; &lt;chr&gt;          &lt;int&gt;
+##  1         1 2005-05-24…          367         130 2005-05-26…        1
+##  2         2 2005-05-24…         1525         459 2005-05-28…        1
+##  3         3 2005-05-24…         1711         408 2005-06-01…        1
+##  4         4 2005-05-24…         2452         333 2005-06-03…        2
+##  5         5 2005-05-24…         2079         222 2005-06-02…        1
+##  6         6 2005-05-24…         2792         549 2005-05-27…        1
+##  7         7 2005-05-24…         3995         269 2005-05-29…        2
+##  8         8 2005-05-24…         2346         239 2005-05-27…        2
+##  9         9 2005-05-25…         2580         126 2005-05-28…        1
+## 10        10 2005-05-25…         1824         399 2005-05-31…        2
+## # … with 16,034 more rows, and 1 more variable: last_update &lt;chr&gt;</code></pre>
 <p>For comparsion, in Python, we use</p>
 <pre class="python"><code>import sqlite3
-sakila_lite = sqlite3.connect(&#39;sakila.sqlite&#39;)
+sakila = sqlite3.connect(&#39;sakila.sqlite&#39;)
 c = sakila.cursor()
-c.execute(&quot;SELECT COUNT(*) AS `n` FROM `rental`&quot;)
+c.execute(&quot;SELECT * FROM `rental`&quot;)
 c.fetchall()</code></pre>
-<p>SQLite supports both double quotes (which is the standard) and backticks to quote identifiers. Backticks are used in another popular database MySQL. Double quotes are used in Postgresql. It is always a good practice to quote the identifers.</p>
-<pre class="sql"><code>SELECT COUNT(*) AS `n` from `actor`;</code></pre>
-<pre class="sql"><code>-- The standard way
+<div id="identifier-quotation" class="section level3">
+<h3>Identifier quotation</h3>
+<p>SQLite supports both double quotes (which is the standard) and backticks to quote identifiers (table and column names). Backticks are used in another popular database MySQL. Double quotes are used in Postgresql. It is always a good practice to quote the identifers.</p>
+<pre class="sql"><code>-- MySQL
+SELECT COUNT(*) AS `n` from `actor`;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>1 records</caption>
+<thead>
+<tr class="header">
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">200</td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre class="sql"><code>-- PostgresQL (ANSI standstad)
 SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
-<p>SQLite supports both style.</p>
+<div class="knitsql-table">
+<table>
+<caption>1 records</caption>
+<thead>
+<tr class="header">
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">200</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>SQLite supports both styles.</p>
 <pre class="sql"><code>SELECT COUNT(*) AS `n` from `actor`;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>1 records</caption>
+<thead>
+<tr class="header">
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">200</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <div id="select" class="section level3">
 <h3>SELECT</h3>
 <p>The SELECT statement is pretty much the <code>select()</code> function in <code>dplyr</code>.</p>
@@ -849,6 +1051,14 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
 ##  9 bailey     
 ## 10 bailey     
 ## # … with 190 more rows</code></pre>
+<pre class="r"><code>sakila_lite %&gt;%
+  tbl(&quot;actor&quot;) %&gt;%
+  transmute(family_name = str_to_lower(last_name)) %&gt;%
+  show_query()</code></pre>
+<pre><code>## &lt;SQL&gt;
+## SELECT LOWER(`last_name`) AS `family_name`
+## FROM `actor`</code></pre>
+<p>To select every column,</p>
 <pre class="sql"><code>SELECT * FROM &quot;actor&quot;;</code></pre>
 <div class="knitsql-table">
 <table>
@@ -983,154 +1193,110 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
 <div id="order-by-clause" class="section level3">
 <h3>ORDER BY Clause</h3>
 <p>It is equivalent to <code>arrange()</code> in <code>dplyr</code></p>
-<pre class="sql"><code>SELECT * FROM &quot;actor&quot; ORDER BY &quot;last_name&quot;;</code></pre>
+<pre class="sql"><code>SELECT &quot;film_id&quot;, &quot;title&quot; FROM &quot;film&quot; ORDER BY &quot;title&quot;;</code></pre>
 <div class="knitsql-table">
 <table>
 <caption>Displaying records 1 - 10</caption>
 <thead>
 <tr class="header">
-<th align="right">actor_id</th>
-<th align="left">first_name</th>
-<th align="left">last_name</th>
-<th align="left">last_update</th>
+<th align="left">film_id</th>
+<th align="center">title</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">58</td>
-<td align="left">CHRISTIAN</td>
-<td align="left">AKROYD</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="left">1</td>
+<td align="center">ACADEMY DINOSAUR</td>
 </tr>
 <tr class="even">
-<td align="right">92</td>
-<td align="left">KIRSTEN</td>
-<td align="left">AKROYD</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="left">2</td>
+<td align="center">ACE GOLDFINGER</td>
 </tr>
 <tr class="odd">
-<td align="right">182</td>
-<td align="left">DEBBIE</td>
-<td align="left">AKROYD</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="left">3</td>
+<td align="center">ADAPTATION HOLES</td>
 </tr>
 <tr class="even">
-<td align="right">118</td>
-<td align="left">CUBA</td>
-<td align="left">ALLEN</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="left">4</td>
+<td align="center">AFFAIR PREJUDICE</td>
 </tr>
 <tr class="odd">
-<td align="right">145</td>
-<td align="left">KIM</td>
-<td align="left">ALLEN</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="left">5</td>
+<td align="center">AFRICAN EGG</td>
 </tr>
 <tr class="even">
-<td align="right">194</td>
-<td align="left">MERYL</td>
-<td align="left">ALLEN</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="left">6</td>
+<td align="center">AGENT TRUMAN</td>
 </tr>
 <tr class="odd">
-<td align="right">76</td>
-<td align="left">ANGELINA</td>
-<td align="left">ASTAIRE</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="left">7</td>
+<td align="center">AIRPLANE SIERRA</td>
 </tr>
 <tr class="even">
-<td align="right">112</td>
-<td align="left">RUSSELL</td>
-<td align="left">BACALL</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="left">8</td>
+<td align="center">AIRPORT POLLOCK</td>
 </tr>
 <tr class="odd">
-<td align="right">67</td>
-<td align="left">JESSICA</td>
-<td align="left">BAILEY</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="left">9</td>
+<td align="center">ALABAMA DEVIL</td>
 </tr>
 <tr class="even">
-<td align="right">190</td>
-<td align="left">AUDREY</td>
-<td align="left">BAILEY</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="left">10</td>
+<td align="center">ALADDIN CALENDAR</td>
 </tr>
 </tbody>
 </table>
 </div>
-<pre class="sql"><code>SELECT * FROM &quot;actor&quot; ORDER BY &quot;last_name&quot; DESC;</code></pre>
+<pre class="sql"><code>SELECT &quot;film_id&quot;, &quot;title&quot; FROM &quot;film&quot; ORDER BY &quot;title&quot; DESC;</code></pre>
 <div class="knitsql-table">
 <table>
 <caption>Displaying records 1 - 10</caption>
 <thead>
 <tr class="header">
-<th align="right">actor_id</th>
-<th align="left">first_name</th>
-<th align="left">last_name</th>
-<th align="left">last_update</th>
+<th align="right">film_id</th>
+<th align="center">title</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">186</td>
-<td align="left">JULIA</td>
-<td align="left">ZELLWEGER</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="right">1000</td>
+<td align="center">ZORRO ARK</td>
 </tr>
 <tr class="even">
-<td align="right">111</td>
-<td align="left">CAMERON</td>
-<td align="left">ZELLWEGER</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="right">999</td>
+<td align="center">ZOOLANDER FICTION</td>
 </tr>
 <tr class="odd">
-<td align="right">85</td>
-<td align="left">MINNIE</td>
-<td align="left">ZELLWEGER</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="right">998</td>
+<td align="center">ZHIVAGO CORE</td>
 </tr>
 <tr class="even">
-<td align="right">63</td>
-<td align="left">CAMERON</td>
-<td align="left">WRAY</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="right">997</td>
+<td align="center">YOUTH KICK</td>
 </tr>
 <tr class="odd">
-<td align="right">156</td>
-<td align="left">FAY</td>
-<td align="left">WOOD</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="right">996</td>
+<td align="center">YOUNG LANGUAGE</td>
 </tr>
 <tr class="even">
-<td align="right">13</td>
-<td align="left">UMA</td>
-<td align="left">WOOD</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="right">995</td>
+<td align="center">YENTL IDAHO</td>
 </tr>
 <tr class="odd">
-<td align="right">144</td>
-<td align="left">ANGELA</td>
-<td align="left">WITHERSPOON</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="right">994</td>
+<td align="center">WYOMING STORM</td>
 </tr>
 <tr class="even">
-<td align="right">147</td>
-<td align="left">FAY</td>
-<td align="left">WINSLET</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="right">993</td>
+<td align="center">WRONG BEHAVIOR</td>
 </tr>
 <tr class="odd">
-<td align="right">68</td>
-<td align="left">RIP</td>
-<td align="left">WINSLET</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="right">992</td>
+<td align="center">WRATH MILE</td>
 </tr>
 <tr class="even">
-<td align="right">168</td>
-<td align="left">WILL</td>
-<td align="left">WILSON</td>
-<td align="left">2019-04-11 18:11:48</td>
+<td align="right">991</td>
+<td align="center">WORST BANGER</td>
 </tr>
 </tbody>
 </table>
@@ -1184,10 +1350,9 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
 </div>
 <pre class="r"><code>sakila_lite %&gt;%
   tbl(&quot;actor&quot;) %&gt;%
-  distinct(last_name)</code></pre>
-<pre><code>## # Source:   lazy query [?? x 1]
-## # Database: sqlite 3.30.1
-## #   [/Users/Randy/Dropbox/Spring2020/sta141b/sta141b-notes/04-14-sql/sakila.sqlite]
+  distinct(last_name) %&gt;% 
+  collect()</code></pre>
+<pre><code>## # A tibble: 121 x 1
 ##    last_name
 ##    &lt;chr&gt;    
 ##  1 AKROYD   
@@ -1200,7 +1365,7 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
 ##  8 BARRYMORE
 ##  9 BASINGER 
 ## 10 BENING   
-## # … with more rows</code></pre>
+## # … with 111 more rows</code></pre>
 </div>
 <div id="limit" class="section level3">
 <h3>LIMIT</h3>
@@ -1234,10 +1399,9 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
 </div>
 <pre class="r"><code>sakila_lite %&gt;%
   tbl(&quot;actor&quot;) %&gt;%
-  head(2)</code></pre>
-<pre><code>## # Source:   lazy query [?? x 4]
-## # Database: sqlite 3.30.1
-## #   [/Users/Randy/Dropbox/Spring2020/sta141b/sta141b-notes/04-14-sql/sakila.sqlite]
+  head(2) %&gt;% 
+  collect()</code></pre>
+<pre><code>## # A tibble: 2 x 4
 ##   actor_id first_name last_name last_update        
 ##      &lt;int&gt; &lt;chr&gt;      &lt;chr&gt;     &lt;chr&gt;              
 ## 1        1 PENELOPE   GUINESS   2019-04-11 18:11:48
@@ -1246,28 +1410,13 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
 <div id="where" class="section level3">
 <h3>WHERE</h3>
 <p>It is equivalent to <code>filter()</code> in <code>dplyr</code>.</p>
-<ul>
-<li><p>SQLite (and MySQL) allows double qoutes to quote string values but it is actually not the SQL standard. In SQL standard, strings are quoted in single quotes.</p></li>
-<li><p>In SQL standard, we should use <code>=</code> for comparison, but not <code>==</code>.</p></li>
-</ul>
-<pre class="r"><code>sakila_lite %&gt;% tbl(&quot;film&quot;) %&gt;% distinct(rating)</code></pre>
-<pre><code>## # Source:   lazy query [?? x 1]
-## # Database: sqlite 3.30.1
-## #   [/Users/Randy/Dropbox/Spring2020/sta141b/sta141b-notes/04-14-sql/sakila.sqlite]
-##   rating
-##   &lt;chr&gt; 
-## 1 PG    
-## 2 G     
-## 3 NC-17 
-## 4 PG-13 
-## 5 R</code></pre>
-<pre class="sql"><code>SELECT * FROM &quot;film&quot; WHERE &quot;rating&quot; = &#39;PG&#39; AND &quot;length&quot; = 90;</code></pre>
+<pre class="sql"><code>SELECT * FROM &quot;film&quot; WHERE &quot;rating&quot; = &quot;PG&quot; AND &quot;length&quot; = 90;</code></pre>
 <div class="knitsql-table">
 <table>
 <caption>1 records</caption>
 <thead>
 <tr class="header">
-<th align="left">film_id</th>
+<th align="right">film_id</th>
 <th align="center">title</th>
 <th align="left">description</th>
 <th align="left">release_year</th>
@@ -1284,7 +1433,7 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">776</td>
+<td align="right">776</td>
 <td align="center">SECRET GROUNDHOG</td>
 <td align="left">A Astounding Story of a Cat And a Database Administrator who must Build a Technical Writer in New Orleans</td>
 <td align="left">2006</td>
@@ -1301,26 +1450,106 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
 </tbody>
 </table>
 </div>
+<pre class="sql"><code>SELECT * FROM &quot;film&quot; WHERE &quot;rating&quot; = &#39;PG&#39; AND &quot;length&quot; = 90;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>1 records</caption>
+<thead>
+<tr class="header">
+<th align="right">film_id</th>
+<th align="center">title</th>
+<th align="left">description</th>
+<th align="right">release_year</th>
+<th align="right">language_id</th>
+<th align="right">original_language_id</th>
+<th align="right">rental_duration</th>
+<th align="right">rental_rate</th>
+<th align="right">length</th>
+<th align="right">replacement_cost</th>
+<th align="left">rating</th>
+<th align="left">last_update</th>
+<th align="left">special_features</th>
+<th align="left">fulltext</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">776</td>
+<td align="center">SECRET GROUNDHOG</td>
+<td align="left">A Astounding Story of a Cat And a Database Administrator who must Build a Technical Writer in New Orleans</td>
+<td align="right">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">6</td>
+<td align="right">4.99</td>
+<td align="right">90</td>
+<td align="right">11.99</td>
+<td align="left">PG</td>
+<td align="left">2017-09-10 17:46:03</td>
+<td align="left">{Commentaries,“Deleted Scenes”}</td>
+<td align="left">‘administr’:12 ‘astound’:4 ‘build’:15 ‘cat’:8 ‘databas’:11 ‘groundhog’:2 ‘must’:14 ‘new’:20 ‘orlean’:21 ‘secret’:1 ‘stori’:5 ‘technic’:17 ‘writer’:18</td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre class="sql"><code>SELECT * FROM `film` WHERE `rating` = &quot;PG&quot; AND `length` = 90;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>1 records</caption>
+<thead>
+<tr class="header">
+<th align="right">film_id</th>
+<th align="center">title</th>
+<th align="left">description</th>
+<th align="right">release_year</th>
+<th align="right">language_id</th>
+<th align="right">original_language_id</th>
+<th align="right">rental_duration</th>
+<th align="right">rental_rate</th>
+<th align="right">length</th>
+<th align="right">replacement_cost</th>
+<th align="left">rating</th>
+<th align="left">special_features</th>
+<th align="left">last_update</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">776</td>
+<td align="center">SECRET GROUNDHOG</td>
+<td align="left">A Astounding Story of a Cat And a Database Administrator who must Build a Technical Writer in New Orleans</td>
+<td align="right">2006</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">6</td>
+<td align="right">4.99</td>
+<td align="right">90</td>
+<td align="right">11.99</td>
+<td align="left">PG</td>
+<td align="left">Commentaries,Deleted Scenes</td>
+<td align="left">2006-02-15 05:03:42</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Remarks:</p>
+<ul>
+<li>For strings, SQLite (and MySQL) allows double qoutes to quote string values but it is actually not the SQL standard. In SQL standard, strings are quoted in single quotes.</li>
+<li>In SQL standard, we should use <code>=</code> for comparison, but not <code>==</code>.</li>
+<li>THere eixists other keywords such as <code>NOT</code> and <code>OR</code>.</li>
+</ul>
 <pre class="r"><code>sakila_lite %&gt;%
   tbl(&quot;film&quot;) %&gt;%
-  filter(rating == &quot;PG&quot; &amp; length &gt; 90) %&gt;%
-  collect()</code></pre>
-<pre><code>## # A tibble: 131 x 13
-##    film_id title description release_year language_id original_langua…
-##      &lt;int&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;              &lt;int&gt;            &lt;int&gt;
-##  1       6 AGEN… A Intrepid… 2006                   1               NA
-##  2      12 ALAS… A Fanciful… 2006                   1               NA
-##  3      13 ALI … A Action-P… 2006                   1               NA
-##  4      19 AMAD… A Emotiona… 2006                   1               NA
-##  5      37 ARIZ… A Brillian… 2006                   1               NA
-##  6      41 ARSE… A Fanciful… 2006                   1               NA
-##  7      65 BEHA… A Unbeliev… 2006                   1               NA
-##  8      72 BILL… A Stunning… 2006                   1               NA
-##  9      74 BIRC… A Fanciful… 2006                   1               NA
-## 10      84 BOIL… A Awe-Insp… 2006                   1               NA
-## # … with 121 more rows, and 7 more variables: rental_duration &lt;int&gt;,
-## #   rental_rate &lt;dbl&gt;, length &lt;int&gt;, replacement_cost &lt;dbl&gt;, rating &lt;chr&gt;,
-## #   special_features &lt;chr&gt;, last_update &lt;chr&gt;</code></pre>
+  filter(rating == &quot;PG&quot;, length == 90)</code></pre>
+<pre><code>## # Source:   lazy query [?? x 13]
+## # Database: sqlite 3.30.1
+## #   [/Users/Randy/Dropbox/Spring2020/sta141b/sta141b-notes/ch02-sql/sakila.sqlite]
+##   film_id title description release_year language_id original_langua…
+##     &lt;int&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;              &lt;int&gt;            &lt;int&gt;
+## 1     776 SECR… A Astoundi… 2006                   1               NA
+## # … with 7 more variables: rental_duration &lt;int&gt;, rental_rate &lt;dbl&gt;,
+## #   length &lt;int&gt;, replacement_cost &lt;dbl&gt;, rating &lt;chr&gt;, special_features &lt;chr&gt;,
+## #   last_update &lt;chr&gt;</code></pre>
 <ul>
 <li>The <code>IN</code> operator</li>
 </ul>
@@ -1501,10 +1730,9 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
 </div>
 <pre class="r"><code>sakila_lite %&gt;%
   tbl(&quot;film&quot;) %&gt;%
-  filter(rating %in% c(&quot;PG&quot;, &quot;PG-13&quot;))</code></pre>
-<pre><code>## # Source:   lazy query [?? x 13]
-## # Database: sqlite 3.30.1
-## #   [/Users/Randy/Dropbox/Spring2020/sta141b/sta141b-notes/04-14-sql/sakila.sqlite]
+  filter(rating %in% c(&quot;PG&quot;, &quot;PG-13&quot;)) %&gt;% 
+  collect()</code></pre>
+<pre><code>## # A tibble: 417 x 13
 ##    film_id title description release_year language_id original_langua…
 ##      &lt;int&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;              &lt;int&gt;            &lt;int&gt;
 ##  1       1 ACAD… A Epic Dra… 2006                   1               NA
@@ -1517,7 +1745,7 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
 ##  8      19 AMAD… A Emotiona… 2006                   1               NA
 ##  9      28 ANTH… A Touching… 2006                   1               NA
 ## 10      33 APOL… A Action-P… 2006                   1               NA
-## # … with more rows, and 7 more variables: rental_duration &lt;int&gt;,
+## # … with 407 more rows, and 7 more variables: rental_duration &lt;int&gt;,
 ## #   rental_rate &lt;dbl&gt;, length &lt;int&gt;, replacement_cost &lt;dbl&gt;, rating &lt;chr&gt;,
 ## #   special_features &lt;chr&gt;, last_update &lt;chr&gt;</code></pre>
 <ul>
@@ -1545,8 +1773,78 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
 </div>
 <p>Remark: in SQLite, the <code>LIKE</code> operator is case insensitive. However, it is not the case for other DBs.</p>
 <pre class="sql"><code>SELECT &quot;title&quot; FROM &quot;film&quot; WHERE &quot;title&quot; LIKE &#39;%victory%&#39;;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>0 records</caption>
+<thead>
+<tr class="header">
+<th align="left">title</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+</div>
 <p>In Postgres, there is a <code>ILIKE</code> (case insensitive <code>LIKE</code>) operator</p>
 <pre class="sql"><code>SELECT &quot;title&quot; FROM &quot;film&quot; WHERE &quot;title&quot; ILIKE &#39;%victory%&#39;;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>2 records</caption>
+<thead>
+<tr class="header">
+<th align="left">title</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">ALTER VICTORY</td>
+</tr>
+<tr class="even">
+<td align="left">VICTORY ACADEMY</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>In MySQL (depends on the configuration),</p>
+<pre class="sql"><code>SELECT `title` FROM `film` WHERE `title` LIKE &#39;%victory%&#39;;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>2 records</caption>
+<thead>
+<tr class="header">
+<th align="left">title</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">ALTER VICTORY</td>
+</tr>
+<tr class="even">
+<td align="left">VICTORY ACADEMY</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A slightly universal solution</p>
+<pre class="sql"><code>SELECT &quot;title&quot; FROM &quot;film&quot; WHERE LOWER(&quot;title&quot;) LIKE &#39;%victory%&#39;;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>2 records</caption>
+<thead>
+<tr class="header">
+<th align="left">title</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">ALTER VICTORY</td>
+</tr>
+<tr class="even">
+<td align="left">VICTORY ACADEMY</td>
+</tr>
+</tbody>
+</table>
+</div>
 <ul>
 <li>REGEX</li>
 </ul>
@@ -1563,7 +1861,7 @@ SELECT COUNT(*) AS &quot;n&quot; from &quot;actor&quot;;</code></pre>
     WHEN &quot;length&quot; &lt; 60 THEN &#39;short&#39;
     WHEN &quot;length&quot; &lt; 90 THEN &#39;mid&#39;
     ELSE &#39;long&#39;
-  END &quot;len&quot;
+  END &quot;length&quot;
 FROM &quot;film&quot;;</code></pre>
 <div class="knitsql-table">
 <table>
@@ -1572,7 +1870,7 @@ FROM &quot;film&quot;;</code></pre>
 <tr class="header">
 <th align="left">film_id</th>
 <th align="center">title</th>
-<th align="left">len</th>
+<th align="left">length</th>
 </tr>
 </thead>
 <tbody>
@@ -1635,59 +1933,214 @@ FROM &quot;film&quot;;</code></pre>
 <ul>
 <li>Inner Join - selects records that have matching values in both tables.</li>
 </ul>
-<pre class="sql"><code>SELECT a.&quot;inventory_id&quot;, b.&quot;customer_id&quot;
-  FROM &quot;inventory&quot; a
-  JOIN &quot;rental&quot; b ON a.&quot;inventory_id&quot; = b.&quot;inventory_id&quot;
-  ORDER BY a.&quot;inventory_id&quot;</code></pre>
+<pre class="sql"><code>SELECT *
+  FROM &quot;inventory&quot; a JOIN &quot;rental&quot; b
+  ON a.&quot;inventory_id&quot; = b.&quot;inventory_id&quot;;</code></pre>
 <div class="knitsql-table">
 <table>
 <caption>Displaying records 1 - 10</caption>
 <thead>
 <tr class="header">
 <th align="right">inventory_id</th>
+<th align="right">film_id</th>
+<th align="right">store_id</th>
+<th align="left">last_update</th>
+<th align="right">rental_id</th>
+<th align="left">rental_date</th>
+<th align="right">inventory_id</th>
+<th align="right">customer_id</th>
+<th align="left">return_date</th>
+<th align="right">staff_id</th>
+<th align="left">last_update</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">367</td>
+<td align="right">80</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:48</td>
+<td align="right">1</td>
+<td align="left">2005-05-24 22:53:30.000</td>
+<td align="right">367</td>
+<td align="right">130</td>
+<td align="left">2005-05-26 22:04:30.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="even">
+<td align="right">1525</td>
+<td align="right">333</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:48</td>
+<td align="right">2</td>
+<td align="left">2005-05-24 22:54:33.000</td>
+<td align="right">1525</td>
+<td align="right">459</td>
+<td align="left">2005-05-28 19:40:33.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="odd">
+<td align="right">1711</td>
+<td align="right">373</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:48</td>
+<td align="right">3</td>
+<td align="left">2005-05-24 23:03:39.000</td>
+<td align="right">1711</td>
+<td align="right">408</td>
+<td align="left">2005-06-01 22:12:39.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="even">
+<td align="right">2452</td>
+<td align="right">535</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:48</td>
+<td align="right">4</td>
+<td align="left">2005-05-24 23:04:41.000</td>
+<td align="right">2452</td>
+<td align="right">333</td>
+<td align="left">2005-06-03 01:43:41.000</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="odd">
+<td align="right">2079</td>
+<td align="right">450</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:48</td>
+<td align="right">5</td>
+<td align="left">2005-05-24 23:05:21.000</td>
+<td align="right">2079</td>
+<td align="right">222</td>
+<td align="left">2005-06-02 04:33:21.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="even">
+<td align="right">2792</td>
+<td align="right">613</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:48</td>
+<td align="right">6</td>
+<td align="left">2005-05-24 23:08:07.000</td>
+<td align="right">2792</td>
+<td align="right">549</td>
+<td align="left">2005-05-27 01:32:07.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="odd">
+<td align="right">3995</td>
+<td align="right">870</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:48</td>
+<td align="right">7</td>
+<td align="left">2005-05-24 23:11:53.000</td>
+<td align="right">3995</td>
+<td align="right">269</td>
+<td align="left">2005-05-29 20:34:53.000</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="even">
+<td align="right">2346</td>
+<td align="right">510</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:48</td>
+<td align="right">8</td>
+<td align="left">2005-05-24 23:31:46.000</td>
+<td align="right">2346</td>
+<td align="right">239</td>
+<td align="left">2005-05-27 23:33:46.000</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="odd">
+<td align="right">2580</td>
+<td align="right">565</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:48</td>
+<td align="right">9</td>
+<td align="left">2005-05-25 00:00:40.000</td>
+<td align="right">2580</td>
+<td align="right">126</td>
+<td align="left">2005-05-28 00:22:40.000</td>
+<td align="right">1</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+<tr class="even">
+<td align="right">1824</td>
+<td align="right">396</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:48</td>
+<td align="right">10</td>
+<td align="left">2005-05-25 00:02:21.000</td>
+<td align="right">1824</td>
+<td align="right">399</td>
+<td align="left">2005-05-31 22:44:21.000</td>
+<td align="right">2</td>
+<td align="left">2019-04-11 18:11:49</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>If we only want <code>store_id</code> and <code>customer_id</code>,</p>
+<pre class="sql"><code>SELECT a.&quot;store_id&quot;, b.&quot;customer_id&quot;
+  FROM &quot;inventory&quot; a JOIN &quot;rental&quot; b
+  ON a.&quot;inventory_id&quot; = b.&quot;inventory_id&quot;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>Displaying records 1 - 10</caption>
+<thead>
+<tr class="header">
+<th align="right">store_id</th>
 <th align="right">customer_id</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="right">1</td>
-<td align="right">431</td>
+<td align="right">130</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">459</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">408</td>
 </tr>
 <tr class="even">
 <td align="right">1</td>
-<td align="right">518</td>
+<td align="right">333</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">222</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">549</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">269</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">239</td>
 </tr>
 <tr class="odd">
 <td align="right">1</td>
-<td align="right">279</td>
+<td align="right">126</td>
 </tr>
 <tr class="even">
 <td align="right">2</td>
-<td align="right">411</td>
-</tr>
-<tr class="odd">
-<td align="right">2</td>
-<td align="right">170</td>
-</tr>
-<tr class="even">
-<td align="right">2</td>
-<td align="right">161</td>
-</tr>
-<tr class="odd">
-<td align="right">2</td>
-<td align="right">581</td>
-</tr>
-<tr class="even">
-<td align="right">2</td>
-<td align="right">359</td>
-</tr>
-<tr class="odd">
-<td align="right">3</td>
-<td align="right">39</td>
-</tr>
-<tr class="even">
-<td align="right">3</td>
-<td align="right">541</td>
+<td align="right">399</td>
 </tr>
 </tbody>
 </table>
@@ -1696,82 +2149,91 @@ FROM &quot;film&quot;;</code></pre>
   tbl(sakila_lite, &quot;inventory&quot;), 
   tbl(sakila_lite, &quot;rental&quot;), 
   by = &quot;inventory_id&quot;) %&gt;%
-  select(inventory_id, customer_id) %&gt;% 
-  arrange(inventory_id) %&gt;%
+  select(store_id, customer_id) %&gt;% 
   collect()</code></pre>
 <pre><code>## # A tibble: 16,044 x 2
-##    inventory_id customer_id
-##           &lt;int&gt;       &lt;int&gt;
-##  1            1         431
-##  2            1         518
-##  3            1         279
-##  4            2         411
-##  5            2         170
-##  6            2         161
-##  7            2         581
-##  8            2         359
-##  9            3          39
-## 10            3         541
+##    store_id customer_id
+##       &lt;int&gt;       &lt;int&gt;
+##  1        1         130
+##  2        2         459
+##  3        2         408
+##  4        1         333
+##  5        2         222
+##  6        1         549
+##  7        2         269
+##  8        1         239
+##  9        1         126
+## 10        2         399
 ## # … with 16,034 more rows</code></pre>
 <p>We could also join a more sophisticated subquery.</p>
 <ul>
-<li>Find all the inventories where were rented and not retured.</li>
+<li>Find all the inventories that were rented but not retured.</li>
 </ul>
-<pre class="sql"><code>SELECT a.&quot;inventory_id&quot;, b.&quot;customer_id&quot;
+<pre class="sql"><code>SELECT a.&quot;store_id&quot;, a.&quot;inventory_id&quot;, b.&quot;customer_id&quot;
   FROM &quot;inventory&quot; a 
   JOIN (
     SELECT * FROM &quot;rental&quot; WHERE &quot;return_date&quot; IS NULL
-  ) b ON a.&quot;inventory_id&quot; = b.&quot;inventory_id&quot;
-  ORDER BY a.&quot;inventory_id&quot;</code></pre>
+  ) b ON a.&quot;inventory_id&quot; = b.&quot;inventory_id&quot;</code></pre>
 <div class="knitsql-table">
 <table>
 <caption>Displaying records 1 - 10</caption>
 <thead>
 <tr class="header">
+<th align="right">store_id</th>
 <th align="right">inventory_id</th>
 <th align="right">customer_id</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">6</td>
-<td align="right">554</td>
+<td align="right">1</td>
+<td align="right">2047</td>
+<td align="right">155</td>
 </tr>
 <tr class="even">
-<td align="right">9</td>
-<td align="right">366</td>
+<td align="right">2</td>
+<td align="right">2026</td>
+<td align="right">335</td>
 </tr>
 <tr class="odd">
-<td align="right">21</td>
-<td align="right">111</td>
+<td align="right">2</td>
+<td align="right">1545</td>
+<td align="right">83</td>
 </tr>
 <tr class="even">
-<td align="right">25</td>
-<td align="right">590</td>
+<td align="right">2</td>
+<td align="right">4106</td>
+<td align="right">219</td>
 </tr>
 <tr class="odd">
-<td align="right">70</td>
-<td align="right">108</td>
+<td align="right">1</td>
+<td align="right">817</td>
+<td align="right">99</td>
 </tr>
 <tr class="even">
-<td align="right">81</td>
-<td align="right">236</td>
+<td align="right">2</td>
+<td align="right">1857</td>
+<td align="right">192</td>
 </tr>
 <tr class="odd">
-<td align="right">97</td>
-<td align="right">512</td>
+<td align="right">2</td>
+<td align="right">478</td>
+<td align="right">11</td>
 </tr>
 <tr class="even">
-<td align="right">106</td>
-<td align="right">44</td>
+<td align="right">1</td>
+<td align="right">1622</td>
+<td align="right">597</td>
 </tr>
 <tr class="odd">
-<td align="right">112</td>
-<td align="right">349</td>
+<td align="right">2</td>
+<td align="right">3043</td>
+<td align="right">53</td>
 </tr>
 <tr class="even">
-<td align="right">177</td>
-<td align="right">317</td>
+<td align="right">1</td>
+<td align="right">3947</td>
+<td align="right">521</td>
 </tr>
 </tbody>
 </table>
@@ -1779,83 +2241,229 @@ FROM &quot;film&quot;;</code></pre>
 <ul>
 <li>Left Join - returns all records from the left table, and the matched records from the right table</li>
 </ul>
-<pre class="sql"><code>SELECT a.&quot;inventory_id&quot;, b.&quot;customer_id&quot;
+<pre class="sql"><code>SELECT a.&quot;store_id&quot;, a.&quot;inventory_id&quot;, b.&quot;customer_id&quot;
   FROM &quot;inventory&quot; a 
   LEFT JOIN (
     SELECT * FROM &quot;rental&quot; WHERE &quot;return_date&quot; IS NULL
-  ) b ON a.&quot;inventory_id&quot; = b.&quot;inventory_id&quot;
-  ORDER BY a.&quot;inventory_id&quot;</code></pre>
+  ) b ON a.&quot;inventory_id&quot; = b.&quot;inventory_id&quot;</code></pre>
 <div class="knitsql-table">
 <table>
 <caption>Displaying records 1 - 10</caption>
 <thead>
 <tr class="header">
-<th align="left">inventory_id</th>
+<th align="right">store_id</th>
+<th align="right">inventory_id</th>
 <th align="right">customer_id</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">1</td>
+<td align="right">1</td>
+<td align="right">1</td>
 <td align="right">NA</td>
 </tr>
 <tr class="even">
-<td align="left">2</td>
+<td align="right">1</td>
+<td align="right">2</td>
 <td align="right">NA</td>
 </tr>
 <tr class="odd">
-<td align="left">3</td>
+<td align="right">1</td>
+<td align="right">3</td>
 <td align="right">NA</td>
 </tr>
 <tr class="even">
-<td align="left">4</td>
+<td align="right">1</td>
+<td align="right">4</td>
 <td align="right">NA</td>
 </tr>
 <tr class="odd">
-<td align="left">5</td>
+<td align="right">2</td>
+<td align="right">5</td>
 <td align="right">NA</td>
 </tr>
 <tr class="even">
-<td align="left">6</td>
+<td align="right">2</td>
+<td align="right">6</td>
 <td align="right">554</td>
 </tr>
 <tr class="odd">
-<td align="left">7</td>
+<td align="right">2</td>
+<td align="right">7</td>
 <td align="right">NA</td>
 </tr>
 <tr class="even">
-<td align="left">8</td>
+<td align="right">2</td>
+<td align="right">8</td>
 <td align="right">NA</td>
 </tr>
 <tr class="odd">
-<td align="left">9</td>
+<td align="right">2</td>
+<td align="right">9</td>
 <td align="right">366</td>
 </tr>
 <tr class="even">
-<td align="left">10</td>
+<td align="right">2</td>
+<td align="right">10</td>
 <td align="right">NA</td>
 </tr>
 </tbody>
 </table>
 </div>
 <ul>
+<li>Right Join - opposite of Left Join</li>
+</ul>
+<pre class="sql"><code>SELECT a.&quot;store_id&quot;, a.&quot;inventory_id&quot;, b.&quot;customer_id&quot;
+  FROM &quot;inventory&quot; a 
+  RIGHT JOIN (
+    SELECT * FROM &quot;rental&quot; WHERE &quot;return_date&quot; IS NULL
+  ) b ON a.&quot;inventory_id&quot; = b.&quot;inventory_id&quot;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>Displaying records 1 - 10</caption>
+<thead>
+<tr class="header">
+<th align="right">store_id</th>
+<th align="right">inventory_id</th>
+<th align="right">customer_id</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">6</td>
+<td align="right">554</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">9</td>
+<td align="right">366</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">21</td>
+<td align="right">111</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">25</td>
+<td align="right">590</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">70</td>
+<td align="right">108</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">81</td>
+<td align="right">236</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">97</td>
+<td align="right">512</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">106</td>
+<td align="right">44</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">112</td>
+<td align="right">349</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">177</td>
+<td align="right">317</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Remark: SQLite doesn’t support Right join</p>
+<ul>
 <li>Full Join - returns all records when there is a match in left or right table records.</li>
 </ul>
-<p>SQLite doesn’t support full join.</p>
-<pre class="sql"><code>SELECT a.&quot;inventory_id&quot;, b.&quot;customer_id&quot;
+<pre class="sql"><code>SELECT a.&quot;store_id&quot;, a.&quot;inventory_id&quot;, b.&quot;customer_id&quot;
   FROM &quot;inventory&quot; a 
   FULL JOIN (
     SELECT * FROM &quot;rental&quot; WHERE &quot;return_date&quot; IS NULL
-  ) b ON a.&quot;inventory_id&quot; = b.&quot;inventory_id&quot;
-  ORDER BY a.&quot;inventory_id&quot;</code></pre>
+  ) b ON a.&quot;inventory_id&quot; = b.&quot;inventory_id&quot;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>Displaying records 1 - 10</caption>
+<thead>
+<tr class="header">
+<th align="right">store_id</th>
+<th align="right">inventory_id</th>
+<th align="right">customer_id</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">NA</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">4</td>
+<td align="right">NA</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">6</td>
+<td align="right">554</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">7</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">8</td>
+<td align="right">NA</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">9</td>
+<td align="right">366</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">10</td>
+<td align="right">NA</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Remark: SQLite doesn’t support full join.</p>
 <ul>
 <li>Semi Join - return all records in the left table which has a match in the right table.</li>
 </ul>
 <pre class="sql"><code>SELECT *
-  FROM &quot;inventory&quot; i
+  FROM &quot;inventory&quot; a
   WHERE EXISTS (
-    SELECT * FROM &quot;rental&quot; r
-      WHERE r.&quot;inventory_id&quot; = i.&quot;inventory_id&quot; AND &quot;return_date&quot; IS NULL
+    SELECT * FROM &quot;rental&quot; b
+      WHERE &quot;return_date&quot; IS NULL AND b.&quot;inventory_id&quot; = a.&quot;inventory_id&quot;
   )</code></pre>
 <div class="knitsql-table">
 <table>
@@ -1932,14 +2540,33 @@ FROM &quot;film&quot;;</code></pre>
 </tbody>
 </table>
 </div>
+<pre class="r"><code>tbl(sakila_lite, &quot;inventory&quot;) %&gt;% 
+  semi_join(
+    tbl(sakila_lite, &quot;rental&quot;) %&gt;% filter(is.na(return_date)),
+    by = &quot;inventory_id&quot;) %&gt;% 
+  collect()</code></pre>
+<pre><code>## # A tibble: 183 x 4
+##    inventory_id film_id store_id last_update        
+##           &lt;int&gt;   &lt;int&gt;    &lt;int&gt; &lt;chr&gt;              
+##  1            6       1        2 2019-04-11 18:11:48
+##  2            9       2        2 2019-04-11 18:11:48
+##  3           21       4        2 2019-04-11 18:11:48
+##  4           25       5        2 2019-04-11 18:11:48
+##  5           70      13        2 2019-04-11 18:11:48
+##  6           81      17        1 2019-04-11 18:11:48
+##  7           97      19        2 2019-04-11 18:11:48
+##  8          106      21        2 2019-04-11 18:11:48
+##  9          112      22        2 2019-04-11 18:11:48
+## 10          177      39        2 2019-04-11 18:11:48
+## # … with 173 more rows</code></pre>
 <ul>
 <li>Anti Join - remove all records in the left table which has a match in the right table.</li>
 </ul>
 <pre class="sql"><code>SELECT *
-  FROM &quot;inventory&quot; i
+  FROM &quot;inventory&quot; a
   WHERE NOT EXISTS (
-    SELECT * FROM &quot;rental&quot; r
-      WHERE r.&quot;inventory_id&quot; = i.&quot;inventory_id&quot; AND &quot;return_date&quot; IS NULL
+    SELECT * FROM &quot;rental&quot; b
+      WHERE b.&quot;return_date&quot; IS NULL AND a.&quot;inventory_id&quot; = b.&quot;inventory_id&quot;
   )</code></pre>
 <div class="knitsql-table">
 <table>
@@ -2016,6 +2643,25 @@ FROM &quot;film&quot;;</code></pre>
 </tbody>
 </table>
 </div>
+<pre class="r"><code>tbl(sakila_lite, &quot;inventory&quot;) %&gt;% 
+  anti_join(
+    tbl(sakila_lite, &quot;rental&quot;) %&gt;% filter(is.na(return_date)),
+    by = &quot;inventory_id&quot;) %&gt;% 
+  collect()</code></pre>
+<pre><code>## # A tibble: 4,398 x 4
+##    inventory_id film_id store_id last_update        
+##           &lt;int&gt;   &lt;int&gt;    &lt;int&gt; &lt;chr&gt;              
+##  1            1       1        1 2019-04-11 18:11:48
+##  2            2       1        1 2019-04-11 18:11:48
+##  3            3       1        1 2019-04-11 18:11:48
+##  4            4       1        1 2019-04-11 18:11:48
+##  5            5       1        2 2019-04-11 18:11:48
+##  6            7       1        2 2019-04-11 18:11:48
+##  7            8       1        2 2019-04-11 18:11:48
+##  8           10       2        2 2019-04-11 18:11:48
+##  9           11       2        2 2019-04-11 18:11:48
+## 10           12       3        2 2019-04-11 18:11:48
+## # … with 4,388 more rows</code></pre>
 </div>
 <div id="aggregate-functions" class="section level3">
 <h3>Aggregate Functions</h3>
@@ -2032,16 +2678,24 @@ FROM &quot;film&quot;;</code></pre>
 <caption>1 records</caption>
 <thead>
 <tr class="header">
-<th align="left">avg_length</th>
+<th align="right">avg_length</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">115.272</td>
+<td align="right">115.272</td>
 </tr>
 </tbody>
 </table>
 </div>
+<pre class="r"><code>sakila_lite %&gt;% 
+  tbl(&quot;film&quot;) %&gt;% 
+  summarize(avg_length = mean(length)) %&gt;% 
+  collect()</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   avg_length
+##        &lt;dbl&gt;
+## 1       115.</code></pre>
 </div>
 <div id="group-by" class="section level3">
 <h3>Group By</h3>
@@ -2080,6 +2734,19 @@ FROM &quot;film&quot;;</code></pre>
 </tbody>
 </table>
 </div>
+<pre class="r"><code>sakila_lite %&gt;% 
+  tbl(&quot;film&quot;) %&gt;% 
+  group_by(rating) %&gt;% 
+  summarize(avg_length = mean(length)) %&gt;% 
+  collect()</code></pre>
+<pre><code>## # A tibble: 5 x 2
+##   rating avg_length
+##   &lt;chr&gt;       &lt;dbl&gt;
+## 1 G            111.
+## 2 NC-17        113.
+## 3 PG           112.
+## 4 PG-13        120.
+## 5 R            119.</code></pre>
 <pre class="sql"><code>SELECT &quot;rating&quot;, &quot;rental_duration&quot;, AVG(&quot;length&quot;) AS &quot;avg_length&quot; 
   FROM &quot;film&quot; GROUP BY &quot;rating&quot;, &quot;rental_duration&quot;;</code></pre>
 <div class="knitsql-table">
@@ -2150,7 +2817,7 @@ FROM &quot;film&quot;;</code></pre>
 <div id="subquery-and-with" class="section level3">
 <h3>Subquery and WITH</h3>
 <p>We could use subquery to perform more complicated tasks.</p>
-<pre class="sql"><code>SELECT &quot;rating&quot;, &quot;avg_length&quot;
+<pre class="sql"><code>SELECT *
 FROM
   (
   SELECT &quot;rating&quot;, AVG(&quot;length&quot;) AS &quot;avg_length&quot; 
@@ -2204,7 +2871,7 @@ WHERE &quot;avg_length&quot; &gt; 115;</code></pre>
 </table>
 </div>
 <p>However, not all database systems support <code>WITH</code> (most does). Then those situation, you need to repeart the query.</p>
-<pre class="sql"><code>SELECT &quot;rating&quot;
+<pre class="sql"><code>SELECT &quot;rating&quot;, &quot;avg_length&quot; 
 FROM (
     SELECT &quot;rating&quot;, AVG(&quot;length&quot;) AS &quot;avg_length&quot; 
       FROM &quot;film&quot; GROUP BY &quot;rating&quot;
@@ -2221,11 +2888,116 @@ WHERE &quot;avg_length&quot; = (
 <thead>
 <tr class="header">
 <th align="left">rating</th>
+<th align="right">avg_length</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="left">PG-13</td>
+<td align="right">120.4439</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="over" class="section level3">
+<h3>OVER</h3>
+<p>Calculate the sum of “amount” for each store.</p>
+<pre class="sql"><code>SELECT &quot;store_id&quot;, SUM(&quot;amount&quot;) 
+ FROM &quot;rental&quot; r 
+  JOIN &quot;payment&quot; p 
+  on r.&quot;rental_id&quot; = p.&quot;rental_id&quot;
+  JOIN &quot;inventory&quot; i 
+  on r.&quot;inventory_id&quot; = i.&quot;inventory_id&quot;
+  GROUP BY &quot;store_id&quot;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>2 records</caption>
+<thead>
+<tr class="header">
+<th align="right">store_id</th>
+<th align="right">sum</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">33726.77</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">33689.74</td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre class="sql"><code>SELECT &quot;store_id&quot;, &quot;amount&quot;, SUM(&quot;amount&quot;) OVER (PARTITION BY &quot;store_id&quot;)
+FROM
+(SELECT * FROM &quot;rental&quot; r 
+  JOIN &quot;payment&quot; p 
+  on r.&quot;rental_id&quot; = p.&quot;rental_id&quot;
+  JOIN &quot;inventory&quot; i 
+  on r.&quot;inventory_id&quot; = i.&quot;inventory_id&quot;) table2</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>Displaying records 1 - 10</caption>
+<thead>
+<tr class="header">
+<th align="right">store_id</th>
+<th align="right">amount</th>
+<th align="right">sum</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">0.99</td>
+<td align="right">33689.74</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">4.99</td>
+<td align="right">33689.74</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">8.99</td>
+<td align="right">33689.74</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">2.99</td>
+<td align="right">33689.74</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">1.99</td>
+<td align="right">33689.74</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">0.99</td>
+<td align="right">33689.74</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">8.99</td>
+<td align="right">33689.74</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">6.99</td>
+<td align="right">33689.74</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">4.99</td>
+<td align="right">33689.74</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">3.99</td>
+<td align="right">33689.74</td>
 </tr>
 </tbody>
 </table>
@@ -2623,12 +3395,6 @@ SELECT * FROM &quot;film&quot; where &quot;film_id&quot; &gt;= 4;</code></pre>
 <pre class="r"><code># create a local empty SQLite database called mydb.sqlite
 mydb &lt;- dbConnect(RSQLite::SQLite(), dbname = &quot;mydb.sqlite&quot;)</code></pre>
 <ul>
-<li>delete a table permanently.</li>
-</ul>
-<pre class="r"><code>drop_sql &lt;- sqlInterpolate(mydb, &quot;DROP TABLE ?tablename;&quot;, tablename = &quot;table1&quot;)
-mydb %&gt;% dbExecute(drop_sql)</code></pre>
-<p>Remark: the use of sqlInterpolate is to avoid SQL injection attack</p>
-<ul>
 <li>create table</li>
 </ul>
 <pre class="r"><code>mydb %&gt;% dbCreateTable(
@@ -2636,14 +3402,22 @@ mydb %&gt;% dbExecute(drop_sql)</code></pre>
   tibble(fruit = character(0), count = integer(0))
 )
 mydb %&gt;% dbReadTable(&quot;table1&quot;)</code></pre>
-<pre class="sql"><code>CREATE TABLE table2 (
-    id int NOT NULL,
-    last_name varchar(255) NOT NULL,
-    first_name varchar(255),
-    age int,
-    PRIMARY KEY (id)
+<pre class="sql"><code>CREATE TABLE &quot;table2&quot; (
+    &quot;id&quot; int NOT NULL,
+    &quot;last_name&quot; varchar(255) NOT NULL,
+    &quot;first_name&quot; varchar(255),
+    &quot;age&quot; int,
+    PRIMARY KEY (&quot;id&quot;)
 );</code></pre>
-<p>There is also <code>dbWriteTable</code> which export the whole data frame as a table of the database.</p>
+<p>There is also <code>dbWriteTable</code> which exports the whole data frame as a table of the database.</p>
+<ul>
+<li>delete a table permanently.</li>
+</ul>
+<pre class="sql"><code>DROP TABLE &quot;table2&quot;;</code></pre>
+<pre class="r"><code>mydb %&gt;% dbExecute(&#39;DROP TABLE &quot;table2&quot;;&#39;)</code></pre>
+<pre class="r"><code>drop_sql &lt;- sqlInterpolate(mydb, &quot;DROP TABLE ?tablename;&quot;, tablename = &quot;table1&quot;)
+mydb %&gt;% dbExecute(drop_sql)</code></pre>
+<p>Remark: the use of sqlInterpolate is to avoid SQL injection attack. Computerphile has a great video on this topic: <a href="https://www.youtube.com/watch?v=ciNHn38EyRc" class="uri">https://www.youtube.com/watch?v=ciNHn38EyRc</a></p>
 <ul>
 <li>INSERT – insert one or more rows into a table.</li>
 </ul>
@@ -2652,11 +3426,10 @@ mydb %&gt;% dbReadTable(&quot;table1&quot;)</code></pre>
   tibble(fruit = &quot;apple&quot;, count = 2))
 
 # alternatively
-sql &lt;- mydb %&gt;% sqlAppendTable(
+insert_sql &lt;- mydb %&gt;% sqlAppendTable(
   &quot;table1&quot;,
   tibble(fruit = &quot;apple&quot;, count = 2), row.names = FALSE)
-mydb %&gt;% dbExecute(sql)
-
+mydb %&gt;% dbExecute(insert_sql)
 
 mydb %&gt;% dbReadTable(&quot;table1&quot;)</code></pre>
 <pre class="sql"><code>INSERT INTO &#39;table2&#39; (id, last_name, first_name, age)
@@ -2667,14 +3440,14 @@ mydb %&gt;% dbReadTable(&quot;table1&quot;)</code></pre>
 <ul>
 <li>UPDATE – update existing data in a table.</li>
 </ul>
-<pre class="r"><code>mydb %&gt;% dbExecute(&quot;UPDATE table2 SET age = 33 WHERE id = 1;&quot;)</code></pre>
-<pre class="sql"><code>UPDATE table2 SET age = 33 WHERE id = 1;</code></pre>
+<pre class="r"><code>mydb %&gt;% dbExecute(&#39;UPDATE &quot;table2&quot; SET &quot;age&quot; = 33 WHERE &quot;id&quot; = 1;&#39;)</code></pre>
+<pre class="sql"><code>UPDATE &quot;table2&quot; SET &quot;age&quot; = 33 WHERE &quot;id&quot; = 1;</code></pre>
 <pre class="r"><code>mydb %&gt;% dbReadTable(&quot;table2&quot;)</code></pre>
 <ul>
 <li>DELETE – delete data from a table permanently.</li>
 </ul>
-<pre class="r"><code>mydb %&gt;% dbExecute(&quot;DELETE FROM table2 WHERE id = 1;&quot;)</code></pre>
-<pre class="sql"><code>DELETE FROM table2 WHERE id = 1;</code></pre>
+<pre class="r"><code>mydb %&gt;% dbExecute(&#39;DELETE FROM &quot;table2&quot; WHERE &quot;id&quot; = 1;&#39;)</code></pre>
+<pre class="sql"><code>DELETE FROM &quot;table2&quot; WHERE &quot;id&quot; = 1;</code></pre>
 <pre class="r"><code>mydb %&gt;% dbReadTable(&quot;table2&quot;)</code></pre>
 </div>
 </div>
