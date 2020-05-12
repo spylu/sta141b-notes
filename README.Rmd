@@ -23,7 +23,7 @@ output:
 | 04-14, 04-16, 04-21 | [sql](ch02-sql/sql.Rmd)       | [sql]
 | 04-23               | [json](ch03-nosql/json.Rmd)       | [json]
 | 04-28               | [nosql](ch03-nosql/nosql.Rmd)       | [nosql]
-| 04-30               | [nosql](ch04-shiny/shiny.Rmd)       | [shiny]
+| 04-30               | [shiny](ch04-shiny/shiny.Rmd)       | [shiny]
 
 
 [introduction]: README.md

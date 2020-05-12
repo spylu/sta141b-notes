@@ -10,6 +10,7 @@ server <- function(input, output, session) {
   observe({
     data <- get(input$data, "package:datasets")
     # freeze the access of input$cols until all observers are execuated.
+
     freezeReactiveValue(input, "cols")
     updateCheckboxGroupInput(session, "cols", choices = names(data))
   })
