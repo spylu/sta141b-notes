@@ -12,6 +12,8 @@ server <- function(input, output) {
     ## to require that the user types something, use: `req(input$data)`
     ## but better: require that input$data is valid and leave the last
     ## valid table up
+    req(input$data != "", cancelOutput = TRUE)
+
     req(exists(input$data, "package:datasets", inherits = FALSE),
         cancelOutput = TRUE)
 

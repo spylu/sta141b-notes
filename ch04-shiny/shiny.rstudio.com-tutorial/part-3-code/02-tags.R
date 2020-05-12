@@ -7,8 +7,7 @@ ui <- fluidPage(
   p(style = "font-family:Impact",
     "See other apps in the",
     a("Shiny Showcase",
-      href = "http://www.rstudio.com/
-      products/shiny/shiny-user-showcase/")
+      href = "http://www.rstudio.com/products/shiny/shiny-user-showcase/")
   )
 )
 
