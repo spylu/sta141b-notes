@@ -27,14 +27,17 @@
 
 ## Material
 
-| Date                | Note                          | HTML                                                                                   |
-| ------------------- | ----------------------------- | -------------------------------------------------------------------------------------- |
-| 03-31               | Introduction                  | [introduction](README.md)                                                              |
-| 04-02, 04-07, 04-09 | [dplyr](ch01-dplyr/dplyr.Rmd) | [dplyr](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch01-dplyr/dplyr.html) |
-| 04-14, 04-16, 04-21 | [sql](ch02-sql/sql.Rmd)       | [sql](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch02-sql/sql.html)       |
-| 04-23               | [json](ch03-nosql/json.Rmd)   | [json](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch03-nosql/json.html)   |
-| 04-28               | [nosql](ch03-nosql/nosql.Rmd) | [nosql](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch03-nosql/nosql.html) |
-| 04-30               | [shiny](ch04-shiny/shiny.Rmd) | [shiny](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch04-shiny/shiny.html) |
+| Date                | Note                                                          | HTML                                                                                   |
+| ------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| 03-31               | Introduction                                                  | [introduction](README.md)                                                              |
+| 04-02, 04-07, 04-09 | [dplyr](ch01-dplyr/dplyr.Rmd)                                 | [dplyr](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch01-dplyr/dplyr.html) |
+| 04-14, 04-16, 04-21 | [sql](ch02-sql/sql.Rmd)                                       | [sql](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch02-sql/sql.html)       |
+| 04-23               | [json](ch03-nosql/json.Rmd)                                   | [json](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch03-nosql/json.html)   |
+| 04-28               | [nosql](ch03-nosql/nosql.Rmd)                                 | [nosql](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch03-nosql/nosql.html) |
+| 04-30, 05-05, 05-07 | [shiny](ch04-shiny/shiny.Rmd)                                 | [shiny](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch04-shiny/shiny.html) |
+|                     | [tutorial](ch04-shiny/shiny.rstudio.com-tutorial)             |                                                                                        |
+| 05-12               | [shinydb](https://github.com/ucdavis-sta141b-sq-2020/shinydb) |                                                                                        |
+| 05-12               | [api](ch05-api/api.Rmd)                                       | [api](https://ucdavis-sta141b-sq-2020.github.io/sta141b-notes/ch05-api/api.html)       |
 
 ## Links
 
