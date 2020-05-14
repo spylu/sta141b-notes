@@ -18,14 +18,19 @@ This section lists some examples of public HTTP APIs that publish data in JSON f
 
 See also https://github.com/public-apis/public-apis for a list of public APIs.
 
-## CitiBike NYC
+# CitiBike NYC
 
 A single public API that shows location, status and current availability for all stations in the New York City bike sharing imitative. https://www.citibikenyc.com/system-data
 
 
 ```{r}
 citibike <- fromJSON("https://gbfs.citibikenyc.com/gbfs/en/station_status.json")
-as_datetime(citibike$last_updated)
+with_tz(as_datetime(citibike$last_updated), "US/Pacific")
+```
+
+
+```{r}
+citibike %>% glimpse()
 ```
 
 
@@ -40,22 +45,28 @@ nrow(stations)
 ```
 
 
-## OnWater https://onwater.io/
+# OnWater https://onwater.io/
 
 ```{r, cache = TRUE}
 # davis
-url <- str_glue("https://api.onwater.io/api/v1/results/{lat},{long}", lat = 38.54491, long = -121.74052)
+url <- str_glue(
+  "https://api.onwater.io/api/v1/results/{lat},{long}", 
+  lat = 38.54491, 
+  long = -121.74052)
 fromJSON(url)
 ```
 
 ```{r, cache = TRUE}
 # lake tahoe
-url <- str_glue("https://api.onwater.io/api/v1/results/{lat},{long}", lat = 39.0968, long = -120.0324)
+url <- str_glue(
+  "https://api.onwater.io/api/v1/results/{lat},{long}", 
+  lat = 39.0968, 
+  long = -120.0324)
 fromJSON(url)
 ```
 
 
-## Deck of Cards http://deckofcardsapi.com/
+# Deck of Cards https://deckofcardsapi.com/
 
 It is a very simple API which suffles cards.
 
@@ -97,8 +108,7 @@ cards
 ```
 
 
-
-## GeoDataSource https://www.geodatasource.com/
+# GeoDataSource https://www.geodatasource.com/
 
 In this secton, we are going to show you how we use an API which requires an API key. API key allows you to use the services the API provides on behalf of yourself.
 
