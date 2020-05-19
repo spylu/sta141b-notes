@@ -25,7 +25,13 @@ A single public API that shows location, status and current availability for all
 
 ```{r}
 citibike <- fromJSON("https://gbfs.citibikenyc.com/gbfs/en/station_status.json")
+# you can change timezone using `with_tz`
 as_datetime(citibike$last_updated)
+with_tz(as_datetime(citibike$last_updated))
+```
+```{r}
+# gives us snapshot of data
+citibike %>% glimpse()
 ```
 
 
@@ -43,13 +49,16 @@ nrow(stations)
 ## OnWater https://onwater.io/
 
 ```{r, cache = TRUE}
+# this api tells you whether there is water at some given coordinates
 # davis
+# same as manually inserting lat and long by hand
 url <- str_glue("https://api.onwater.io/api/v1/results/{lat},{long}", lat = 38.54491, long = -121.74052)
 fromJSON(url)
 ```
 
 ```{r, cache = TRUE}
 # lake tahoe
+# same as above
 url <- str_glue("https://api.onwater.io/api/v1/results/{lat},{long}", lat = 39.0968, long = -120.0324)
 fromJSON(url)
 ```
@@ -60,6 +69,7 @@ fromJSON(url)
 It is a very simple API which suffles cards.
 
 ```{r, out.width = "20%"}
+# this api might not work T_T
 # get a deck
 deck <- fromJSON("https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1")
 deck_id <- deck$deck_id
@@ -89,6 +99,28 @@ library(httr)
 ```
 
 ```{r}
+facebook <- fromJSON("http://api.domainsdb.info/v1/domains/search?domain=facebook")
+# you don't want to directly use `GET` on this object because it's messy 
+```
+
+```{r}
+# setting `GET` parameter
+# stick with this approach for rest of APIs
+r <- GET(
+"http://api.domainsdb.info/v1/domains/search",
+query = list(
+domain = "facebook"
+))
+```
+
+```{r}
+# do this to check whether request was successful
+r
+# converts results from JSON to R list, doesn't use JSONlite package so no simplification into nicer objects
+content(r)
+```
+
+```{r}
 endpoint <- str_glue("https://deckofcardsapi.com/api/deck/{deck_id}/draw/", deck_id = deck$deck_id)
 r <- GET(endpoint, query = list(count = 3))
 json <- content(r, as = "text")
@@ -103,6 +135,7 @@ cards
 In this secton, we are going to show you how we use an API which requires an API key. API key allows you to use the services the API provides on behalf of yourself.
 
 ```{r, eval = FALSE}
+# setting `GET` parameters
 r <- GET(
   "https://api.geodatasource.com/cities",
   query = list(
@@ -259,6 +292,7 @@ GitHub requries API token instead of an API key.
 
 ```{r}
 username <- "randy3k"
+# need this `GET` parameter to go to next page
 r <- GET(
   str_glue("https://api.github.com/users/{username}/repos"),
   add_headers(Authorization = paste("token", Sys.getenv("GITHUB_PAT")))
@@ -274,7 +308,7 @@ Only 30 repos? How to go to next page?
 r$headers$link
 ```
 
-
+Different APIs use different strategies so we need to know how to access different kinds.
 
 
 # Yelp
@@ -284,6 +318,7 @@ Yelp requries Bearer token directory instead of an API token.
 First, you will need to register an app on yelp: https://www.yelp.com/developers
 
 ```{r}
+# in this `GET` command you can search based on other things, doesn't have to be `location`
 r <- GET(
   "https://api.yelp.com/v3/businesses/search",
   add_headers(Authorization = paste("Bearer", Sys.getenv("YELP_TOKEN"))),
@@ -293,6 +328,8 @@ r <- GET(
 )
 stop_for_status(r)
 json <- content(r, as = "text")
+# without `select`, will see all the data for each business in Davis in JSON file
+# this tells you just the names of all the businesses in Davis
 fromJSON(json)$businesses %>% select(name)
 ```
 
