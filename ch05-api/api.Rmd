@@ -18,7 +18,9 @@ This section lists some examples of public HTTP APIs that publish data in JSON f
 
 See also https://github.com/public-apis/public-apis for a list of public APIs.
 
-# CitiBike NYC
+# APIs that do not require authentication
+
+## CitiBike NYC
 
 A single public API that shows location, status and current availability for all stations in the New York City bike sharing imitative. https://www.citibikenyc.com/system-data
 
@@ -45,7 +47,7 @@ nrow(stations)
 ```
 
 
-# OnWater https://onwater.io/
+## OnWater https://onwater.io/
 
 ```{r, cache = TRUE}
 # davis
@@ -66,7 +68,7 @@ fromJSON(url)
 ```
 
 
-# Deck of Cards https://deckofcardsapi.com/
+## Deck of Cards https://deckofcardsapi.com/
 
 It is a very simple API which suffles cards.
 
@@ -102,13 +104,19 @@ library(httr)
 ```{r}
 endpoint <- str_glue("https://deckofcardsapi.com/api/deck/{deck_id}/draw/", deck_id = deck$deck_id)
 r <- GET(endpoint, query = list(count = 3))
-json <- content(r, as = "text")
+stop_for_status(r)
+json <- content(r, as = "text", encoding = "UTF-8")
 cards <- fromJSON(json, flatten = TRUE)
 cards
 ```
 
+```{r}
+knitr::include_graphics(cards$cards$images.svg)
+```
 
-# GeoDataSource https://www.geodatasource.com/
+# APIs that require key/token
+
+## GeoDataSource https://www.geodatasource.com/
 
 In this secton, we are going to show you how we use an API which requires an API key. API key allows you to use the services the API provides on behalf of yourself.
 
@@ -194,7 +202,7 @@ fromJSON(json)
 ```
 
 
-# The Guardian News https://open-platform.theguardian.com/
+## The Guardian News https://open-platform.theguardian.com/
 
 ```{r}
 r <- GET(
@@ -207,7 +215,7 @@ r <- GET(
 stop_for_status(r)
 json <- content(r, as = "text", encoding = "UTF-8")
 result <- fromJSON(json)
-result$response
+result$response$results
 ```
 
 Only 10 results?
@@ -216,8 +224,24 @@ result$response$pages
 ```
 There are many more pages! How to get the second page?
 
+```{r}
+r <- GET(
+  "https://content.guardianapis.com/search",
+  query = list(
+    `api-key` = Sys.getenv("GUARDIAN_KEY"),
+    q = "coronavirus",
+    page = 2
+  )
+)
+stop_for_status(r)
+json <- content(r, as = "text", encoding = "UTF-8")
+result <- fromJSON(json)
+result$response$results
+```
 
-# Wolfram alpha
+
+
+## Wolfram alpha
 
 ```{r}
 r <- GET(
@@ -232,6 +256,7 @@ r <- GET(
 stop_for_status(r)
 json <- content(r, as = "text", encoding = "UTF-8")
 
+
 fromJSON(json, flatten = TRUE)$queryresult$pods %>%
   hoist(subpods, text = "plaintext") %>%
   select(title, text) %>%
@@ -239,7 +264,7 @@ fromJSON(json, flatten = TRUE)$queryresult$pods %>%
 ```
 
 
-# Google map
+## Google map
 
 You will need to register a google clould platfram account with $300 credit first.
 THen following the instruction here to generate an api key.
@@ -263,7 +288,7 @@ fromJSON(json, flatten = TRUE)$results %>% pull(vicinity)
 ```
 
 
-# GitHub API
+## GitHub API
 
 GitHub requries API token instead of an API key.
 
@@ -284,12 +309,9 @@ Only 30 repos? How to go to next page?
 r$headers$link
 ```
 
+## Yelp
 
-
-
-# Yelp
-
-Yelp requries Bearer token directory instead of an API token.
+Yelp requries Bearer token directory instead of an API key.
 
 First, you will need to register an app on yelp: https://www.yelp.com/developers
 
@@ -307,14 +329,38 @@ fromJSON(json)$businesses %>% select(name)
 ```
 
 
+# OAuth
 
-# Noun Project https://thenounproject.com/
+OAuth is a technique to allow developers to access the API on behalf on themself or other users.
 
-The Noun Project uses one-legged OAuth 1.0 protocol to authenticate users.
-In OAuth protocal, there are two important pieces of strings
+There are two versions of OAuth, 1.0 and 2.0. You should not think that 2.0 is better than 1.0. They are simply different implementations.
+
+OAuth is complex but fun to learn about. Read this https://oauth.net/2/ if you are interested.
+
+In OAuth protocol, there are two important pieces of strings
 
 - Client key
-- Client key secret
+- Client secret
+
+To put is simple, there are three cases
+- one legged OAuth: developer directly use the key and secret to access the API
+- two legged OAuth (aka: client credential flow in OAuth 2.0): developer use the key and secret to obtain an access token, and the access token will allow the developer to access the API on behalf of themself
+- three legged OAuth (aka: authorization code flow in OAuth 2.0): it is usually used to access the API on behalf of another user. 
+
+  (Imagine that Bob is writing an email app so that Alice could read her own emails on the app.)
+  The process is roughly the followings
+
+  1. Bob tells Alice the client key and secret
+  2. Alice uses the client key and secret to generate an authorization code from the server
+  3. Alice sends the authorization code to Bob
+  4. Bob uses to authorization code to generate an access token from the server
+  5. Bob uses the access token to access emails for Alice and displays them in the app
+
+
+## Noun Project https://thenounproject.com/ (one legged)
+
+The Noun Project uses one-legged OAuth protocol to authenticate users.
+
 
 ```{r, out.width = "5%"}
 nouns_app <- oauth_app(
@@ -322,15 +368,15 @@ nouns_app <- oauth_app(
   key = "ed652bdcd50a4496bbc2253a603b9e9b",
   secret = Sys.getenv("NOUN_SECRET")
 )
+```
 
-get_nouns_api <- function(endpoint) {
-  signature <- oauth_signature(endpoint, app = nouns_app)
-  GET(endpoint, oauth_header(signature))
-}
 
-r <- get_nouns_api(
-  str_glue("https://api.thenounproject.com/icons/{term}", term = "statistics")
-)
+```{r, out.width = "5%"}
+endpoint <- str_glue(
+  "https://api.thenounproject.com/icons/{term}", 
+  term = "statistics")
+signature <- oauth_signature(endpoint, app = nouns_app)
+r <- GET(endpoint, oauth_header(signature))
 
 stop_for_status(r)
 json <- content(r, as = "text", encoding = "UTF-8")
@@ -340,11 +386,11 @@ knitr::include_graphics(icons[1:10])
 ```
 
 
-# Twitter
+## Twitter (two legged)
 
 First, create an app at https://developer.twitter.com/. You will need to register a twitter developer account first.
 
-Twitter allows an app to access information publicly available on Twitter via two legged OAuth.
+Twitter allows an app to access information publicly available on Twitter via two legged OAuth protocol.
 
 
 ```{r}
@@ -395,4 +441,48 @@ woeid <- get_woeid("Sacramento", "United States")
 get_trends(woeid) %>% select(name)
 ```
 
-PS: There is `rtweet` package, no one, in practice, will directly work with twitter API.
+
+## Google sheet API (three legged)
+
+An API key of google cannot be used to access personal data on google, we will perform a three-legged OAuth dance.
+
+```{r}
+gooogle_app <- oauth_app(
+  "google",
+  key = "948497930689-3qkgfe81jmb52i1aotg8vivgrhfuo2ir.apps.googleusercontent.com",
+  secret = Sys.getenv("GOOGLE_SECRET")
+)
+
+```
+
+In OAuth, developer needs to specify that information they need from the user
+
+```{r}
+google_token <- oauth2.0_token(
+  oauth_endpoints("google"),
+  gooogle_app,
+  scope = c(
+    "profile", 
+    "email",
+    "https://www.googleapis.com/auth/spreadsheets"
+  ),
+  cache = TRUE
+)
+```
+
+A cache file `.httr-oauth` will be created to cache the user token so the user don't have to login everytime. However, treat it carefully, anyone could access your account with the cache.
+
+```{r}
+endpoint <- str_glue(
+  "https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}/values/{range}",
+  spreadsheetId = "1JvqP6R44Rx96kAtEYszDezgUs2hCMp8xPvdZwUIsw-g",
+  range = "A:B"
+  )
+r <- GET(endpoint, config(token = google_token))
+stop_for_status(r)
+```
+
+```{r}
+fromJSON(content(r, as = "text"))$values
+```
+
