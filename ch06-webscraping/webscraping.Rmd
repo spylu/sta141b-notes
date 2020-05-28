@@ -9,6 +9,7 @@ date: "02-25-2020"
 
 ```{r}
 library(tidyverse)
+# Similar to beautifulsoup but younger
 library(rvest)
 ```
 
@@ -16,6 +17,7 @@ library(rvest)
 
 Here is an example of a simple HTML page:
 
+Each `<>` thing signifies tag
 ```html
 <!DOCTYPE html>
 <html>
@@ -39,10 +41,13 @@ Nevertheless, all these tags are predefined so your browser knows what each tag 
 
 It is important to identify the thing that you want to scrape in the webpage. The best way to do it is to use the inspect function in the Chrome browser.
 
+The inspect feature pops out a whole pane of the browser and lets you poke into each text block to see how it's constructed.
 
 ## CSS selector
 
-CSS selector is the most common way to locate an object in a website. 
+CSS is used to control webpage style. CSS selector is the most common way to locate an object in a website. 
+
+`Tag` and `class` are not unique.
 
 - `tag`: the name of the tag, for example `td` and `a` tags
 - `.class`: class of an object
@@ -72,6 +77,7 @@ Put everything together
 ```{r}
 movie_names <- html %>%
   html_nodes("td.titleColumn") %>% 
+# You can combine "a" with above by putting it behind "td.titleColumn" but it's recommended not to
   html_nodes("a") %>%
   html_text()
 ```
@@ -81,7 +87,9 @@ Now, we also want to capture the ratings.
 
 ```{r}
 imdb_ratings <-  html %>%
+# Don't put space behind period because that would indicate descendant
   html_nodes("td.ratingColumn.imdbRating") %>%
+# Only extracting the "strong" text, i.e., the ratings
   html_nodes("strong") %>%
   html_text()
 ```
@@ -93,15 +101,18 @@ tibble(title = movie_names, rating = imdb_ratings)
 How if you also want to get the years? There is also a cute function `html_table`.
 
 ```{r}
+# using `html_nodes` would get you list of things
 html %>% html_node("table.chart.full-width") %>%
   html_table() %>%
+  # Makes sure names are unique so you can `select` later
   as_tibble(.name_repair = "unique") %>%
   select(rank_and_title = `Rank & Title`, rating = `IMDb Rating`) %>%
+  # Need `separate` because rank and title are merged
   separate(rank_and_title, c("rank", "title", "year"), sep = "\n")
 ```
 
 
-Now, we want to url link to the movie "The Shawshank Redemption".
+Now, we want to url link to the movie "The Shawshank Redemption" to scrape stuff from that webpage.
 
 ```{r}
 shawshank_url <- html %>%

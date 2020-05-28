@@ -432,12 +432,15 @@ nouns_app <- oauth_app(
 endpoint <- str_glue(
   "https://api.thenounproject.com/icons/{term}", 
   term = "statistics")
+# since Noun Project uses one-legged OAuth protocol, need endpoint and append signature
 signature <- oauth_signature(endpoint, app = nouns_app)
 r <- GET(endpoint, oauth_header(signature))
 
 stop_for_status(r)
 json <- content(r, as = "text", encoding = "UTF-8")
 
+# this gets you cute icons in black-ish color
+# if you want second page will need to specify `GET` parameter
 icons <- fromJSON(json)$icons %>% pull(preview_url)
 knitr::include_graphics(icons[1:10])
 ```
@@ -456,9 +459,12 @@ twitter_app <- oauth_app("twitter",
   secret = Sys.getenv("TWITTER_SECRET")
 )
 
+# with access token, you can access twitter's API
+# new access token generated when you run this `twitter_token` thing
 twitter_token <- oauth2.0_token(
   oauth_endpoint(
     authorize = NULL,
+# will need to copy some URLs to get token
     access = "https://api.twitter.com/oauth2/token"
   ),
   twitter_app,
@@ -466,6 +472,12 @@ twitter_token <- oauth2.0_token(
 )
 ```
 
+```{r}
+# this lets you get the access token
+twitter_token$credentials$access_token
+```
+
+This document teaches you to get API stuff manually, and though you can use packages for `get_woeid`, etc. in your project, it's not too difficult to write your own and you'll learn more.
 
 ```{r}
 # Where On Earth IDentifier
